@@ -1,0 +1,649 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Workshop infrastructure for HR Agent with AgentCore Managed Harness.
+  Deploys VPC, S3 (Skills), Lambda (HR Tools + KB), and EC2 (SSM access).
+
+Parameters:
+  AZ1:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: First AZ (must support AgentCore — check supported AZ IDs for your region)
+    Default: us-east-1b
+  AZ2:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: Second AZ (must support AgentCore)
+    Default: us-east-1c
+  KnowledgeBaseId:
+    Type: String
+    Description: Bedrock Knowledge Base ID for HR policies
+    Default: ""
+
+Resources:
+  ##############################################################################
+  # VPC — Harness VPC 模式所需
+  ##############################################################################
+  WorkshopVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: workshop-harness-vpc
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Ref AZ1
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: workshop-private-a
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Ref AZ2
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: workshop-private-b
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      CidrBlock: 10.0.100.0/24
+      AvailabilityZone: !Ref AZ1
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: workshop-public
+
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WorkshopVPC
+
+  # cfn-guard suppress: NO_UNRESTRICTED_ROUTE_TO_IGW
+  # Reason (Accepted Risk): NAT Gateway 必须部署在 public subnet，IGW 默认路由 0.0.0.0/0
+  # 是 NAT 实现公网出站的必要条件。private subnet 通过 NAT 出站，不直接接 IGW。
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  NATGatewayEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NATGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WorkshopVPC
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway
+
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+  ##############################################################################
+  # Security Group — Harness VPC 模式出站访问 + EC2
+  ##############################################################################
+  # cfn-guard suppress: EC2_SECURITY_GROUP_EGRESS_OPEN_TO_WORLD_RULE
+  # Reason (Accepted Risk): Harness/Bedrock/AgentCore service endpoints 与 OS 包仓库
+  # 走公网（经 NAT 出站）。已收紧到 443/80 两端口，不开全协议；ingress 完全空。
+  HarnessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for AgentCore Harness and Workshop EC2
+      VpcId: !Ref WorkshopVPC
+      SecurityGroupIngress: []
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS for Bedrock API and AgentCore services
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP for package downloads
+      Tags:
+        - Key: Name
+          Value: workshop-harness-sg
+
+  ##############################################################################
+  # S3 Bucket + Access Point — 存放 Skill 文件（BYO Filesystem）
+  ##############################################################################
+  SkillsLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "workshop-skills-logs-${AWS::AccountId}-${AWS::Region}"
+      AccessControl: LogDeliveryWrite
+      # OwnershipControls 必需：现代 S3 默认 BucketOwnerEnforced 会禁用 ACL，
+      # 与 AccessControl: LogDeliveryWrite 冲突，导致建桶失败。设为 ObjectWriter 允许 ACL。
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      ObjectLockEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration:
+        DestinationBucketName: !Sub "workshop-skills-logs-${AWS::AccountId}-${AWS::Region}"
+        LogFilePrefix: self-logs/
+
+  SkillsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "workshop-skills-${AWS::AccountId}-${AWS::Region}"
+      # AccessControl: Private 是显式声明，与默认值一致；让 cfn-guard 静态扫描跳过
+      # S3_BUCKET_NO_PUBLIC_RW_ACL false-positive。实际公网防护由下面
+      # PublicAccessBlockConfiguration 全 true 提供。
+      AccessControl: Private
+      ObjectLockEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration:
+        DestinationBucketName: !Ref SkillsLogBucket
+        LogFilePrefix: skills-access-logs/
+      Tags:
+        - Key: Workshop
+          Value: harness-hr-assistant
+
+  SkillsAccessPoint:
+    Type: AWS::S3::AccessPoint
+    Properties:
+      Bucket: !Ref SkillsBucket
+      Name: workshop-skills-ap
+      NetworkOrigin: VPC
+      VpcConfiguration:
+        VpcId: !Ref WorkshopVPC
+
+  ##############################################################################
+  # HR Tools Lambda — Gateway Target（KB 检索 + Mock HR 操作）
+  ##############################################################################
+  # cfn-guard suppress: CKV_AWS_27, SQS_QUEUE_KMS_MASTER_KEY_ID_RULE
+  # Reason (Accepted Risk): DLQ 使用 SQS 托管的 SSE (SqsManagedSseEnabled=true)，
+  # workshop 短期场景不需要单独 KMS CMK；避免引入 KMS key 管理与额外 IAM 权限。
+  HRToolsLambdaDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "hr-tools-dlq-${AWS::Region}"
+      SqsManagedSseEnabled: true
+
+  HRToolsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "hr-tools-lambda-role-${AWS::Region}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+
+  HRToolsLambdaDLQPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "hr-tools-dlq-policy-${AWS::Region}"
+      Roles:
+        - !Ref HRToolsLambdaRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sqs:SendMessage
+            Resource: !GetAtt HRToolsLambdaDLQ.Arn
+
+  HRToolsLambda:
+    Type: AWS::Lambda::Function
+    # DependsOn 必需：Lambda 的 DeadLetterConfig 指向 DLQ，需等 DLQ 的 SendMessage
+    # 权限策略先建好，否则 Lambda 创建时校验 SQS 权限失败（资源创建时序竞争）。
+    DependsOn: HRToolsLambdaDLQPolicy
+    Properties:
+      FunctionName: hr-tools-handler
+      Runtime: python3.12
+      Handler: hr_tools_handler.lambda_handler
+      Role: !GetAtt HRToolsLambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      ReservedConcurrentExecutions: 10
+      DeadLetterConfig:
+        TargetArn: !GetAtt HRToolsLambdaDLQ.Arn
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetB
+        SecurityGroupIds:
+          - !Ref HarnessSecurityGroup
+      Environment:
+        Variables:
+          KNOWLEDGE_BASE_ID: !Ref KnowledgeBaseId
+      Code:
+        ZipFile: |
+          # Placeholder - deploy actual code via deploy-lambda.sh script
+          import json
+          def lambda_handler(event, context):
+              return {"statusCode": 200, "body": json.dumps({"message": "Deploy actual handler via deploy-lambda.sh"})}
+
+  HRToolsLambdaGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HRToolsLambda
+      Action: lambda:InvokeFunction
+      Principal: bedrock-agentcore.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  ##############################################################################
+  # EC2 Instance — 参与者工作环境（通过 SSM Session Manager 连接）
+  ##############################################################################
+  WorkshopInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "workshop-ec2-role-${AWS::Region}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+
+  WorkshopScopedIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "workshop-scoped-iam-${AWS::Region}"
+      Roles:
+        - !Ref WorkshopInstanceRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowIAMForAgentCore
+            Effect: Allow
+            Action:
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:GetRole
+              - iam:GetRolePolicy
+              - iam:ListRolePolicies
+              - iam:ListAttachedRolePolicies
+              - iam:PassRole
+              - iam:TagRole
+              - iam:UntagRole
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/hrassistant*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/AgentCore-hrassistant*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/cdk-*"
+          - Sid: AllowIAMPolicyManagement
+            Effect: Allow
+            Action:
+              - iam:CreatePolicy
+              - iam:DeletePolicy
+              - iam:GetPolicy
+              - iam:GetPolicyVersion
+              - iam:ListPolicyVersions
+              - iam:CreatePolicyVersion
+              - iam:DeletePolicyVersion
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:policy/hrassistant*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:policy/AgentCore-hrassistant*"
+          - Sid: AllowIAMReadOnly
+            Effect: Allow
+            Action:
+              - iam:ListRoles
+              - iam:ListPolicies
+              - iam:GetRole
+            Resource: "*"
+          - Sid: AllowSTSForCDK
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/cdk-*"
+
+  WorkshopInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref WorkshopInstanceRole
+
+  WorkshopInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.medium
+      EbsOptimized: true
+      ImageId: !Sub "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      SubnetId: !Ref PrivateSubnetA
+      SecurityGroupIds:
+        - !Ref HarnessSecurityGroup
+      IamInstanceProfile: !Ref WorkshopInstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp3
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          set -e
+          exec > /var/log/workshop-setup.log 2>&1
+
+          echo "=== Creating ssm-user ==="
+          useradd -m ssm-user 2>/dev/null || true
+
+          echo "=== Upgrading AWS CLI ==="
+          curl -s https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip
+          cd /tmp && unzip -qo awscliv2.zip && ./aws/install --update
+          rm -rf /tmp/aws /tmp/awscliv2.zip
+
+          echo "=== Installing Node.js 20 ==="
+          dnf remove -y nodejs nodejs-libs 2>/dev/null || true
+          dnf install -y nodejs20 nodejs20-npm jq git
+
+          # Create symlinks so 'node' and 'npm' point to v20
+          ln -sf /usr/bin/node-20 /usr/local/bin/node
+          ln -sf /usr/bin/npm-20 /usr/local/bin/npm
+          ln -sf /usr/bin/npx-20 /usr/local/bin/npx
+          export PATH=/usr/local/bin:$PATH
+
+          echo "=== Installing AgentCore CLI ==="
+          /usr/local/bin/npm install -g @aws/agentcore@preview
+
+          echo "=== Setting up workshop directory ==="
+          mkdir -p /home/ssm-user/workshop
+          mkdir -p /home/ssm-user/workshop/skills/deep-policy-analysis
+          mkdir -p /home/ssm-user/workshop/skills/leave-calculator
+
+          # Write Skill files
+          cat > /home/ssm-user/workshop/skills/deep-policy-analysis/SKILL.md << 'SKILLEOF'
+          ---
+          name: deep-policy-analysis
+          description: Provide detailed analysis of HR policies with cross-references, exceptions, and specific examples
+          ---
+          # Deep Policy Analysis
+
+          When user needs detailed policy interpretation, execute these steps:
+
+          1. Retrieve the relevant policy document via hr-tools
+          2. Identify applicable sections and any exceptions
+          3. Cross-reference with related policies (e.g., leave policy + benefits policy)
+          4. Provide specific examples relevant to the employee's situation
+          5. Cite exact policy sections and effective dates
+
+          ## Output Format
+
+          - Policy name and version
+          - Applicable sections (quoted)
+          - Exceptions and special cases
+          - Cross-references to related policies
+          - Concrete examples for the employee's situation
+          SKILLEOF
+
+          cat > /home/ssm-user/workshop/skills/leave-calculator/SKILL.md << 'SKILLEOF'
+          ---
+          name: leave-calculator
+          description: Calculate leave balances, plan optimal leave schedules, and check eligibility for various leave types
+          ---
+          # Leave Calculator
+
+          Help employees plan their leave by:
+
+          1. Check current leave balance via hr-tools (check_leave_balance)
+          2. Calculate remaining days by leave type
+          3. Suggest optimal scheduling (avoid peak periods, consider team coverage)
+          4. Verify eligibility for special leave types (marriage, parental, bereavement)
+
+          ## Output Format
+
+          | Leave Type | Entitled | Used | Remaining |
+          |-----------|----------|------|-----------|
+          | Annual    | 15 days  | 5    | 10        |
+          | Sick      | 10 days  | 2    | 8         |
+
+          Include recommendations for optimal scheduling.
+          SKILLEOF
+
+          # Write setup-memory.sh
+          cat > /home/ssm-user/workshop/setup-memory.sh << 'MEMEOF'
+          #!/bin/bash
+          set -e
+          REGION="us-west-2"
+
+          echo "🔍 获取资源信息..."
+          HARNESS_ID=$(aws bedrock-agentcore-control list-harnesses \
+            --region $REGION --query "harnesses[0].harnessId" --output text)
+
+          if [ -z "$HARNESS_ID" ] || [ "$HARNESS_ID" = "None" ]; then
+            echo "❌ 未找到已部署的 Harness。请先执行 agentcore deploy --yes"
+            exit 1
+          fi
+
+          MEMORY_ID=$(aws bedrock-agentcore-control list-memories \
+            --region $REGION --query "memories[?contains(id,'hrassistant')].id | [0]" --output text)
+
+          if [ -z "$MEMORY_ID" ] || [ "$MEMORY_ID" = "None" ]; then
+            echo "❌ 未找到 Memory 资源。请先执行 agentcore deploy --yes"
+            exit 1
+          fi
+
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          MEMORY_ARN="arn:aws:bedrock-agentcore:${REGION}:${ACCOUNT_ID}:memory/${MEMORY_ID}"
+
+          echo "  Harness: $HARNESS_ID"
+          echo "  Memory:  $MEMORY_ID"
+
+          echo "🔍 获取 Memory 策略..."
+          PREF_STRATEGY=$(aws bedrock-agentcore-control get-memory \
+            --memory-id "$MEMORY_ID" --region $REGION \
+            --query "memory.strategies[?type=='USER_PREFERENCE'].strategyId | [0]" --output text)
+
+          SEMANTIC_STRATEGY=$(aws bedrock-agentcore-control get-memory \
+            --memory-id "$MEMORY_ID" --region $REGION \
+            --query "memory.strategies[?type=='SEMANTIC'].strategyId | [0]" --output text)
+
+          echo "  User Preference Strategy: $PREF_STRATEGY"
+          echo "  Semantic Strategy: $SEMANTIC_STRATEGY"
+
+          echo "⚙️  配置 Memory 检索..."
+          aws bedrock-agentcore-control update-harness \
+            --harness-id "$HARNESS_ID" --region $REGION \
+            --memory "{\"optionalValue\":{\"agentCoreMemoryConfiguration\":{\"arn\":\"$MEMORY_ARN\",\"actorId\":\"{actorId}\",\"retrievalConfig\":{\"/users/{actorId}/preferences\":{\"strategyId\":\"$PREF_STRATEGY\",\"topK\":20},\"/users/{actorId}/facts\":{\"strategyId\":\"$SEMANTIC_STRATEGY\",\"topK\":10}}}}}" \
+            > /dev/null
+
+          echo "🔐 配置 IAM 权限..."
+          aws iam attach-role-policy \
+            --role-name hrassistant_hrassistant \
+            --policy-arn "arn:aws:iam::aws:policy/BedrockAgentCoreFullAccess" 2>/dev/null || true
+
+          GW_ROLE=$(aws cloudformation describe-stack-resources \
+            --stack-name AgentCore-hrassistant-default --region $REGION \
+            --query "StackResources[?contains(LogicalResourceId,'GatewayHrgatewayRole') && ResourceType=='AWS::IAM::Role'].PhysicalResourceId" \
+            --output text | awk '{print $1}')
+
+          if [ -n "$GW_ROLE" ] && [ "$GW_ROLE" != "None" ]; then
+            aws iam attach-role-policy \
+              --role-name "$GW_ROLE" \
+              --policy-arn "arn:aws:iam::aws:policy/BedrockAgentCoreFullAccess" 2>/dev/null || true
+            echo "  Gateway Role: $GW_ROLE (已配置)"
+          fi
+
+          echo "⏳ 等待 Harness 更新完成..."
+          sleep 60
+
+          STATUS=$(aws bedrock-agentcore-control get-harness \
+            --harness-id "$HARNESS_ID" --region $REGION \
+            --query "harness.status" --output text)
+
+          if [ "$STATUS" = "READY" ]; then
+            echo ""
+            echo "✅ 配置完成！Harness 状态: READY"
+            echo ""
+            echo "Memory 检索已启用："
+            echo "  - /users/{actorId}/preferences → 用户偏好（最多 20 条）"
+            echo "  - /users/{actorId}/facts → 事实记录（最多 10 条）"
+          else
+            echo ""
+            echo "⚠️  Harness 状态: $STATUS（可能仍在更新中，请稍等后执行 agentcore status 确认）"
+          fi
+          MEMEOF
+          chmod +x /home/ssm-user/workshop/setup-memory.sh
+
+          # Set ownership
+          chown -R ssm-user:ssm-user /home/ssm-user/workshop
+
+          # Configure PATH for ssm-user
+          mkdir -p /home/ssm-user/.aws
+          echo '[default]' > /home/ssm-user/.aws/config
+          echo 'region = us-west-2' >> /home/ssm-user/.aws/config
+          chown -R ssm-user:ssm-user /home/ssm-user/.aws
+          # Configure environment for all users (including SSM sessions)
+          cat > /etc/profile.d/workshop.sh << 'PROFILEEOF'
+          export PATH=/usr/local/bin:$PATH
+          export AWS_DEFAULT_REGION=us-west-2
+          PROFILEEOF
+          chmod 644 /etc/profile.d/workshop.sh
+
+          # Also set in .bashrc for non-login shells
+          echo 'export PATH=/usr/local/bin:$PATH' >> /home/ssm-user/.bashrc
+          echo 'export AWS_DEFAULT_REGION=us-west-2' >> /home/ssm-user/.bashrc
+          chown ssm-user:ssm-user /home/ssm-user/.bashrc
+
+          # Configure git identity for ssm-user
+          cat > /home/ssm-user/.gitconfig << 'GITEOF'
+          [user]
+              email = workshop@example.com
+              name = Workshop User
+          GITEOF
+          chown ssm-user:ssm-user /home/ssm-user/.gitconfig
+
+          echo "=== Workshop EC2 setup complete ==="
+      Tags:
+        - Key: Name
+          Value: workshop-agentcore-ec2
+
+Outputs:
+  VPCId:
+    Description: VPC ID for Harness VPC mode
+    Value: !Ref WorkshopVPC
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCId"
+
+  PrivateSubnets:
+    Description: Private subnet IDs (comma-separated)
+    Value: !Join [",", [!Ref PrivateSubnetA, !Ref PrivateSubnetB]]
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnets"
+
+  SecurityGroupId:
+    Description: Security group ID for Harness
+    Value: !Ref HarnessSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-SecurityGroupId"
+
+  SkillsBucketName:
+    Description: S3 bucket for Skill files
+    Value: !Ref SkillsBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-SkillsBucketName"
+
+  SkillsAccessPointArn:
+    Description: S3 Access Point ARN for Skills filesystem
+    Value: !GetAtt SkillsAccessPoint.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-SkillsAccessPointArn"
+
+  InstanceId:
+    Description: EC2 Instance ID (connect via SSM Session Manager)
+    Value: !Ref WorkshopInstance
+
+  Region:
+    Description: Workshop region
+    Value: !Ref AWS::Region
+
+  AccountId:
+    Description: Workshop account ID
+    Value: !Ref AWS::AccountId
+
+  HRToolsLambdaArn:
+    Description: HR Tools Lambda ARN (for Gateway target)
+    Value: !GetAtt HRToolsLambda.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-HRToolsLambdaArn"

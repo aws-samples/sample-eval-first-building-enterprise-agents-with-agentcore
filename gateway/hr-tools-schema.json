@@ -1,0 +1,78 @@
+[
+  {
+    "name": "retrieve_hr_policy",
+    "description": "Retrieve HR policy documents from Knowledge Base based on a query. Returns relevant policy sections with source references.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The HR policy question or topic to search for"
+        }
+      },
+      "required": ["query"]
+    }
+  },
+  {
+    "name": "check_leave_balance",
+    "description": "Check an employee's current leave balance by type (annual, sick, personal).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "employee_id": {
+          "type": "string",
+          "description": "Employee ID to check balance for"
+        },
+        "leave_type": {
+          "type": "string",
+          "description": "Type of leave, one of: annual, sick, personal, all"
+        }
+      },
+      "required": ["employee_id"]
+    }
+  },
+  {
+    "name": "submit_leave_request",
+    "description": "Submit a leave request for an employee.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "employee_id": {
+          "type": "string",
+          "description": "Employee ID"
+        },
+        "leave_type": {
+          "type": "string",
+          "description": "Type of leave, one of: annual, sick, personal, marriage, parental, bereavement"
+        },
+        "start_date": {
+          "type": "string",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        "end_date": {
+          "type": "string",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for leave (optional)"
+        }
+      },
+      "required": ["employee_id", "leave_type", "start_date", "end_date"]
+    }
+  },
+  {
+    "name": "query_salary_info",
+    "description": "Query salary structure information for a given role level or department.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Query about salary structure, benefits, or compensation"
+        }
+      },
+      "required": ["query"]
+    }
+  }
+]
