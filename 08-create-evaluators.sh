@@ -61,10 +61,6 @@ register_evaluator() {
 }
 JSON
 
-  # 备份真实代码（CLI 注册会覆盖）
-  cp "evaluators/$srcdir/lambda_function.py" /tmp/${name}-lambda.bak
-  cp "evaluators/$srcdir/pyproject.toml" /tmp/${name}-pyproject.bak
-
   local out
   out=$(npx agentcore add evaluator --name "$name" --level "$level" \
     --type code-based --config /tmp/${name}-config.json --json 2>&1 | tail -1)
@@ -76,10 +72,13 @@ JSON
     echo "  $out"
   fi
 
-  # 还原被覆盖的真实代码（CLI 注册时会用 scaffold 覆盖）
-  cp /tmp/${name}-lambda.bak "evaluators/$srcdir/lambda_function.py"
-  cp /tmp/${name}-pyproject.bak "evaluators/$srcdir/pyproject.toml"
-  echo "  ✅ $name source ready"
+  # CLI scaffold 会重建 codeLocation 目录，丢掉 shared/、evaluators/ 子模块。
+  # 整个目录覆盖回去（含 shared/ 与 evaluators/），保证 Lambda 打包完整。
+  # 只 cp lambda_function.py + pyproject.toml 不够：deploy 出去的 Lambda 会
+  # 在 cold start 报 "No module named 'shared'"。
+  rm -rf "evaluators/$srcdir"
+  cp -r "$SRC_DIR/$srcdir" evaluators/
+  echo "  ✅ $name source ready (full tree restored)"
 }
 
 register_evaluator "thelma_rag_quality" "TRACE"   "thelma_eval" "evaluators/thelma_eval"

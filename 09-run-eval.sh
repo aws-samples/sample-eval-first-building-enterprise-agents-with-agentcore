@@ -133,13 +133,14 @@ run_eval() {
   echo "🔬 $label"
   # spans 索引最终一致：刚生成的 trace 可能尚未对 evaluator framework 可见，
   # 表现为 "No session spans found for agent ...". 重试若干次以覆盖索引延迟。
+  # 5×25s=125s 经验值：实测最新 trace 偶尔 >40s 才可见，提到 ~125s 上限稳定通过。
   local out="" attempt
-  for attempt in 1 2 3; do
+  for attempt in 1 2 3 4 5; do
     out=$(npx agentcore run eval --runtime-arn "$RT_ARN" --evaluator-arn "$ev_arn" \
       --region $REGION "$@" --days 1 --json 2>/dev/null | grep -E '^\{')
     if echo "$out" | grep -q '"success":true'; then break; fi
     if echo "$out" | grep -q 'No session spans found'; then
-      [ $attempt -lt 3 ] && { echo "    (spans not indexed yet, retry in 20s ${attempt}/3)"; sleep 20; continue; }
+      [ $attempt -lt 5 ] && { echo "    (spans not indexed yet, retry in 25s ${attempt}/5)"; sleep 25; continue; }
     fi
     break
   done
