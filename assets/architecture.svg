@@ -15,8 +15,7 @@
   <!-- ============ main call flow (top) ============ -->
   <!-- Employee -->
   <rect x="70" y="300" width="150" height="110" rx="12" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
-  <text x="145" y="346" text-anchor="middle" font-size="34">&#128100;</text>
-  <text x="145" y="378" text-anchor="middle" fill="#1b2a4a" font-size="19" font-weight="bold">Employee</text>
+  <text x="145" y="372" text-anchor="middle" fill="#1b2a4a" font-size="19" font-weight="bold">Employee</text>
   <text x="145" y="398" text-anchor="middle" fill="#5b6b86" font-size="15">actor-id</text>
 
   <!-- Harness VPC frame -->
@@ -29,11 +28,11 @@
   <text x="340" y="423" text-anchor="middle" fill="#5b6b86" font-size="14">+ System Prompt</text>
   <!-- Memory -->
   <rect x="470" y="280" width="234" height="84" rx="10" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
-  <text x="490" y="313" fill="#1b2a4a" font-size="17" font-weight="bold">&#128451; Memory</text>
+  <text x="490" y="313" fill="#1b2a4a" font-size="17" font-weight="bold">Memory</text>
   <text x="490" y="340" fill="#5b6b86" font-size="14">long &amp; short term</text>
   <!-- Skills -->
   <rect x="470" y="376" width="234" height="84" rx="10" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
-  <text x="490" y="409" fill="#1b2a4a" font-size="17" font-weight="bold">&#128196; Skills</text>
+  <text x="490" y="409" fill="#1b2a4a" font-size="17" font-weight="bold">Skills</text>
   <text x="490" y="436" fill="#5b6b86" font-size="14">BYO Filesystem</text>
   <!-- Agent <-> Memory / Skills -->
   <g stroke="#9bbce0" stroke-width="2" fill="none">
@@ -43,7 +42,7 @@
 
   <!-- Gateway frame -->
   <rect x="772" y="200" width="430" height="320" rx="14" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
-  <text x="792" y="237" fill="#d9722e" font-size="19" font-weight="bold">&#128682; Gateway &#183; MCP &#183; AWS_IAM</text>
+  <text x="792" y="237" fill="#d9722e" font-size="19" font-weight="bold">Gateway &#183; MCP &#183; AWS_IAM</text>
   <!-- Lambda -->
   <image x="800" y="300" width="80" height="80" xlink:href="icons/Arch_AWS-Lambda_64.svg"/>
   <text x="840" y="402" text-anchor="middle" fill="#1b2a4a" font-size="16" font-weight="bold">HR Tools</text>
@@ -101,12 +100,12 @@
   <!-- THELMA -->
   <rect x="560" y="638" width="430" height="84" rx="12" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
   <rect x="560" y="638" width="8" height="84" rx="4" fill="#2f6db3"/>
-  <text x="586" y="672" fill="#1b2a4a" font-size="19" font-weight="bold">&#128300; THELMA</text>
+  <text x="586" y="672" fill="#1b2a4a" font-size="19" font-weight="bold">THELMA</text>
   <text x="586" y="700" fill="#5b6b86" font-size="15">TRACE &#183; glass-box &#183; RAG quality (7 scores)</text>
   <!-- Mind the Goal -->
   <rect x="560" y="740" width="430" height="84" rx="12" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
   <rect x="560" y="740" width="8" height="84" rx="4" fill="#d9722e"/>
-  <text x="586" y="774" fill="#1b2a4a" font-size="19" font-weight="bold">&#127919; Mind the Goal</text>
+  <text x="586" y="774" fill="#1b2a4a" font-size="19" font-weight="bold">Mind the Goal</text>
   <text x="586" y="802" fill="#7a5a3a" font-size="15">SESSION &#183; black-box &#183; GSR + RCOF</text>
 
   <!-- Nova judge -->

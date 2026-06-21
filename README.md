@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧪 Eval-First: Enterprise Agents with Amazon Bedrock AgentCore
+# Eval-First: Enterprise Agents with Amazon Bedrock AgentCore
 
 **Build a realistic enterprise HR Q&A agent — then _measure_ its quality with code-based evaluators instead of eyeballing answers.**
 
@@ -33,16 +33,16 @@
 
 ---
 
-## 📑 Table of contents
+## Table of contents
 
 1. [What this builds — and why](#1-what-this-builds--and-why)
-2. [Architecture at a glance](#-architecture-at-a-glance)
-3. [The eval-first loop](#-the-eval-first-loop-adlc)
-4. [How this maps to the eval-first methodology](#-how-this-maps-to-the-eval-first-methodology)
+2. [Architecture at a glance](#architecture-at-a-glance)
+3. [The eval-first loop](#the-eval-first-loop-adlc)
+4. [How this maps to the eval-first methodology](#how-this-maps-to-the-eval-first-methodology)
 5. [Prerequisites](#2-prerequisites)
 6. [Execution order at a glance](#3-execution-order-at-a-glance)
 7. [Step-by-step](#4-step-by-step)
-8. [Optional labs](#-optional-labs)
+8. [Optional labs](#optional-labs)
 9. [Cleanup](#5-cleanup--99-cleanupsh)
 10. [Data sources & attribution](#6-data-sources--attribution)
 
@@ -59,7 +59,7 @@ The two evaluators are the heart of the sample. They live in `evaluators/` and a
 re-implementations of **published research methods** (not AWS products), wired to run on Amazon
 Bedrock AgentCore:
 
-### 🔬 `thelma_eval/` — single-turn RAG quality (THELMA)
+### `thelma_eval/` — single-turn RAG quality (THELMA)
 
 Runs at **`TRACE`** level (the *glass-box* granularity — it inspects one execution trace).
 Decomposes one Q&A into `(question, retrieved sources, answer)`. The THELMA paper defines **6
@@ -74,7 +74,7 @@ fact-level), so you'll see **7 numbers** per trace (all 0–1):
 | **RP**  | Response Precision      | Is the answer on-topic? |
 | **RQC** | Response Query Coverage | Is the question fully answered? |
 | **SD**  | Self-Distinctness       | No internal repetition? |
-| 🎯 **GR** | **Groundedness** | **Is every sentence backed by a source? (no hallucination, pass ≥ 0.7)** |
+| **GR** | **Groundedness** | **Is every sentence backed by a source? (no hallucination, pass ≥ 0.7)** |
 
 Its real value is **diagnosis** — the *interplay* of these scores points at which RAG component to fix
 (retriever vs. prompt vs. source docs). The SP1/SP2 split is the key example: a **high SP1 with a low
@@ -83,7 +83,7 @@ of dirty data mixed into the source documents.
 
 ![Reading THELMA — the 7 scores per trace (SP1, SP2, SQC on the retrieval side; RP, RQC, SD on the response side; GR as the headline), and which score pattern points at which fix: SP1 high with SP2 low means dirty source docs; SQC down with RQC up and GR down means tighten the prompt; SP2 near zero means retrieval failed and a prompt change can't help.](assets/thelma-diagnosis.png)
 
-### 🎯 `mtg_eval/` — multi-turn goal success (Mind the Goal)
+### `mtg_eval/` — multi-turn goal success (Mind the Goal)
 
 Runs at **`SESSION`** level (the *black-box* granularity — end-to-end goal outcome) in three steps:
 **segment goals** (merge turns about the same thing), **judge success/failure** (a goal fails if any
@@ -95,7 +95,7 @@ attribute each failure via **RCOF** = *Root Cause of Failure* (7-category defect
 > The **TRACE → glass-box** and **SESSION → black-box** mapping is deliberate: AgentCore's
 > session / trace / span levels line up with the three evaluation granularities (black-box / glass-box
 > / white-box) from the companion white paper. These two evaluators are **custom L2 evaluators**
-> (calibrated LLM-as-a-judge) in that framework — see [below](#-how-this-maps-to-the-eval-first-methodology).
+> (calibrated LLM-as-a-judge) in that framework — see [below](#how-this-maps-to-the-eval-first-methodology).
 
 Both use judge model `us.amazon.nova-2-lite-v1:0`. Each evaluator bundles its algorithm, an **adapter
 layer** (ADOT span → evaluator input), and a Lambda handler.
@@ -110,7 +110,7 @@ retrieval-quality problems instead of a clean toy result.
 
 ---
 
-## 🏗️ Architecture at a glance
+## Architecture at a glance
 
 The agent runs as an AgentCore **Harness** in VPC mode. Every invoke pulls Memory + Skills into
 context, calls HR tools through the **Gateway** (MCP), and emits OTel trace spans that flow to
@@ -122,7 +122,7 @@ CloudWatch — where the two evaluators read them.
 
 ---
 
-## 🔁 The eval-first loop (ADLC)
+## The eval-first loop (ADLC)
 
 The workshop closes the **Agent Development Life Cycle**: build, run, trace, evaluate, _diagnose_, then
 optimize — and prove the fix with a re-evaluation.
@@ -136,7 +136,7 @@ optimize — and prove the fix with a re-evaluation.
 
 ---
 
-## 🧭 How this maps to the eval-first methodology
+## How this maps to the eval-first methodology
 
 This sample is the **hands-on companion** to a four-part white paper on production-grade enterprise
 agents. Where the white paper gives the *why* and the framework, this repo lets you run it end to end.
@@ -163,7 +163,7 @@ These scripts build the **entire system from scratch in your own AWS account**. 
 instance in `us-west-2`**. You must run **every** step in order, starting with the infrastructure stack
 (`00-deploy-infra.sh`).
 
-### 🧰 Tools
+### Tools
 
 | Requirement | Notes |
 |-------------|-------|
@@ -173,7 +173,7 @@ instance in `us-west-2`**. You must run **every** step in order, starting with t
 | Python | 3.10+ (with `pip`) |
 | AgentCore CLI | `npm i -g @aws/agentcore@preview` |
 
-### 🔐 IAM permissions
+### IAM permissions
 
 The identity you run as (e.g. the EC2 instance role, or your CLI user) needs permissions to create and
 manage these services.
@@ -188,7 +188,7 @@ If you control the account, attaching a broad policy (or `PowerUserAccess` + `IA
 EC2 instance role is the simplest way to guarantee the walkthrough completes. Tighten afterward as
 needed.
 
-### 🌎 Region
+### Region
 
 Set your region **once** in the shell you run everything from (all scripts default to `us-west-2`;
 `us-east-1` and `us-east-2` are also supported by the infra script):
@@ -206,7 +206,7 @@ chmod +x *.sh
 Approximate timings are from an end-to-end run on a blank account (us-west-2).
 Total ≈ **25–30 minutes** of mostly-unattended waiting.
 
-| # | Script | Phase | ⏱️ ~Time | What it creates / does |
+| # | Script | Phase | ~Time | What it creates / does |
 |:-:|--------|:-----:|:--------:|------------------------|
 | 1 | `00-setup.sh` | 0 | ~5s | Verify CLIs, create `~/workshop` dirs |
 | 2 | `00-deploy-infra.sh` | 0 | ~5 min | **Required.** CFN stack `workshop-infra`: VPC + subnets + NAT + SG, S3 data bucket + Access Point, EC2 |
@@ -230,7 +230,7 @@ Total ≈ **25–30 minutes** of mostly-unattended waiting.
 
 ## 4. Step-by-step
 
-### 🟢 Step 1 — `00-setup.sh`  ·  _Phase 0_
+### Step 1 — `00-setup.sh`  ·  _Phase 0_
 Verifies `agentcore`, `node`, and `aws` are installed, prints your account/region, and creates the
 `~/workshop/skills/...` directories.
 
@@ -238,7 +238,7 @@ Verifies `agentcore`, `node`, and `aws` are installed, prints your account/regio
 ./00-setup.sh
 ```
 
-### 🟢 Step 2 — `00-deploy-infra.sh`  ·  _Phase 0 — required_
+### Step 2 — `00-deploy-infra.sh`  ·  _Phase 0 — required_
 Deploys the `workshop-infra` CloudFormation stack: VPC, private subnets, NAT, security group, the
 **data** S3 bucket + Access Point, and an EC2 work environment (reachable via SSM). The template
 auto-selects AZs supported by AgentCore. Takes ~5–8 minutes.
@@ -256,7 +256,7 @@ auto-selects AZs supported by AgentCore. Takes ~5–8 minutes.
 > The script is idempotent: if the `workshop-infra` stack already exists, it skips creation and just
 > prints the outputs.
 
-### 🟢 Step 3 — `01-create-kb.sh`  ·  _Phase 0_
+### Step 3 — `01-create-kb.sh`  ·  _Phase 0_
 Generates 11 HR policy markdown documents, then creates an Amazon Bedrock Knowledge Base backed by
 **Amazon S3 Vectors** (embedding model `amazon.titan-embed-text-v2:0`, 1024 dims), ingests the docs,
 and stores the KB ID in SSM at `/app/hr/knowledge_base_id`. The Lambda in the next step reads it from
@@ -285,7 +285,7 @@ step 2 must have completed first**, otherwise this script aborts with
 > **Cost note:** Amazon S3 Vectors is billed on storage + queries (no always-on cluster), so it is much
 > cheaper than an always-on vector DB — but **still delete it when done** (see cleanup).
 
-### 🔵 Step 4 — `02-create-gateway.sh`  ·  _Phase 2_
+### Step 4 — `02-create-gateway.sh`  ·  _Phase 2_
 Two things in one step:
 1. Packages and deploys the **HR Tools Lambda** (`hr-tools-handler`) and its IAM role (with permission
    to read the KB ID from SSM and query the Knowledge Base).
@@ -299,7 +299,7 @@ Two things in one step:
 The Gateway exposes four tools: `retrieve_hr_policy`, `check_leave_balance`, `submit_leave_request`,
 `query_salary_info`.
 
-### 🔵 Step 5 — `03-configure-skills.sh`  ·  _Phase 2_
+### Step 5 — `03-configure-skills.sh`  ·  _Phase 2_
 Writes the two SKILL.md files (`deep-policy-analysis`, `leave-calculator`) and uploads them to the S3
 data bucket under `skills/`. They get mounted into the Harness in the next step (BYO Filesystem).
 
@@ -307,7 +307,7 @@ data bucket under `skills/`. They get mounted into the Harness in the next step 
 ./03-configure-skills.sh
 ```
 
-### 🔵 Step 6 — `04-deploy.sh`  ·  _Phase 2_
+### Step 6 — `04-deploy.sh`  ·  _Phase 2_
 Creates the Harness project, attaches the **existing** Gateway by ARN (so no duplicate Gateway is
 created — this is what makes deployment **single-pass**), writes the system prompt, restricts
 `allowedTools` to `@hr-tools/*`, mounts the Skills filesystem, and deploys.
@@ -321,7 +321,7 @@ created — this is what makes deployment **single-pass**), writes the system pr
 > mode using that stack's subnets/SG. (If the stack were missing, the script would fall back to PUBLIC
 > mode and skip Skills mounting — but in this walkthrough step 2 is required, so you get VPC mode.)
 
-### 🔵 Step 7 — `05-setup-memory.sh`  ·  _Phase 2_
+### Step 7 — `05-setup-memory.sh`  ·  _Phase 2_
 Configures Memory **retrieval** on the deployed Harness so every invoke automatically pulls the user's
 preferences and facts from Memory and injects them into context.
 
@@ -333,7 +333,7 @@ preferences and facts from Memory and injects them into context.
 > `04-deploy.sh` already *creates* the Memory resource (`--memory longAndShortTerm`). This step wires up
 > automatic *retrieval* per-invoke — they are not the same thing.
 
-### 🟣 Step 8 — `06-test-conversation.sh`  ·  _Phase 3_
+### Step 8 — `06-test-conversation.sh`  ·  _Phase 3_
 Runs the first conversation (asks about annual-leave policy) using a fresh session ID and
 `actor-id employee-001`. The answer is intentionally generic at this point — the Agent doesn't know
 your tenure or department yet. This also produces the first **trace**.
@@ -344,7 +344,7 @@ your tenure or department yet. This also produces the first **trace**.
 
 ---
 
-### 🟠 Step 9 — `07-setup-eval-env.sh`  ·  _Phase 4 pre_
+### Step 9 — `07-setup-eval-env.sh`  ·  _Phase 4 pre_
 Installs `uv` (required to package evaluator Python dependencies) and enables **CloudWatch Transaction
 Search**, so the Agent's OTel trace spans land in CloudWatch where the evaluation service can read them.
 
@@ -358,7 +358,7 @@ Search**, so the Agent's OTel trace spans land in CloudWatch where the evaluatio
 > export PATH="$HOME/.local/bin:$PATH"
 > ```
 
-### 🟠 Step 10 — `06-test-conversation.sh` *(run again)*  ·  _Phase 4_
+### Step 10 — `06-test-conversation.sh` *(run again)*  ·  _Phase 4_
 Transaction Search only captures spans created **after** it was enabled. Re-run the conversation to
 generate a trace the evaluators can read:
 
@@ -366,7 +366,7 @@ generate a trace the evaluators can read:
 ./06-test-conversation.sh
 ```
 
-### 🟠 Step 11 — `08-create-evaluators.sh`  ·  _Phase 4_
+### Step 11 — `08-create-evaluators.sh`  ·  _Phase 4_
 Registers and deploys the two custom code-based evaluators, then grants their execution roles Bedrock
 invoke permission (needed for the LLM-judge):
 
@@ -379,7 +379,7 @@ See [`evaluators/README.md`](evaluators/README.md) for what each metric means.
 ./08-create-evaluators.sh
 ```
 
-### 🟠 Step 12 — `09-run-eval.sh`  ·  _Phase 4_
+### Step 12 — `09-run-eval.sh`  ·  _Phase 4_
 By default, runs the **3 golden questions** (performance review / benefits / sick leave) to produce
 traces, waits for them to index, then evaluates those traces and prints, for each: the **Query**, a
 truncated **Response**, and the **score** (THELMA 7-score breakdown + diagnosis, and Mind the Goal GSR
@@ -392,7 +392,7 @@ truncated **Response**, and the **score** (THELMA 7-score breakdown + diagnosis,
 ./09-run-eval.sh <session-id> session   # Mind the Goal only, on one session
 ```
 
-### 🔴 Step 13 — `10-optimize-prompt.sh`  ·  _Phase 5_
+### Step 13 — `10-optimize-prompt.sh`  ·  _Phase 5_
 Closes the ADLC loop. Acting on the Phase 4 diagnosis (`SQC↓ RQC↑ GR↓` / `RP↓` → Prompt), it:
 1. writes an optimized System Prompt with **anti-hallucination constraints** ("answer strictly from
    retrieved content / ignore irrelevant chunks / be concise"),
@@ -416,13 +416,13 @@ Prompt" from "fix retrieval."
 
 ---
 
-## 🧪 Optional labs
+## Optional labs
 
 These three are **optional extensions** beyond the ~2-hour core path. They reuse the Agent and
 evaluators you already deployed, so **run them before `99-cleanup.sh`** — once cleanup runs, those
 resources are gone.
 
-### ⚙️ `11-cost-latency.sh` — operational metrics (cost & latency)  ·  _Phase 6_
+### `11-cost-latency.sh` — operational metrics (cost & latency)  ·  _Phase 6_
 The opening promise of a decision-first agent is three dimensions: **answers well / answers fast /
 offloads work**. THELMA already quantified *"answers well."* This script delivers the other two — **without
 creating any resources**. It reads the **same traces** you already produced from CloudWatch `aws/spans`
@@ -441,7 +441,7 @@ cost ($) side by side.
 > script tries multiple candidates. Prices (`PRICE_IN` / `PRICE_OUT`, $/1M tokens) default to Nova 2
 > Lite; override via env vars and confirm against the AWS pricing page.
 
-### 🔬 Optional lab A — `12-compare-models.sh` (multi-model comparison)
+### Optional lab A — `12-compare-models.sh` (multi-model comparison)
 Answers the question every CXO asks: *"can we switch to a cheaper/faster model and still be good
 enough?"* It **non-destructively** swaps the Harness model, redeploys, re-runs the same 3 golden
 questions, scores them with the same THELMA, compares quality/cost/latency against the Phase 4 baseline,
@@ -462,7 +462,7 @@ decision.
 > data. That instability is itself a useful evaluation finding — *the model is incompatible with your
 > current agent topology* — but it doesn't make a good first demo.
 
-### ⚖️ Optional lab B — `13-judge-stability.sh` (judge stability)
+### Optional lab B — `13-judge-stability.sh` (judge stability)
 Answers the follow-up every CXO asks: *"is your AI judge (THELMA) itself reliable, or does it score
 randomly?"* A lightweight **repeatability** check: it scores the **same trace** N times and looks at the
 spread — consistent scores mean a trustworthy judge; scores bouncing around mean treat the conclusions
@@ -517,10 +517,10 @@ research methods — see [`evaluators/README.md`](evaluators/README.md) for thei
 
 ---
 
-## 🔒 Security
+## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
-## 📄 License
+## License
 
 This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
