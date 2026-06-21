@@ -38,12 +38,13 @@
 1. [What this builds — and why](#1-what-this-builds--and-why)
 2. [Architecture at a glance](#-architecture-at-a-glance)
 3. [The eval-first loop](#-the-eval-first-loop-adlc)
-4. [Prerequisites](#2-prerequisites)
-5. [Execution order at a glance](#3-execution-order-at-a-glance)
-6. [Step-by-step](#4-step-by-step)
-7. [Optional labs](#-optional-labs)
-8. [Cleanup](#5-cleanup--99-cleanupsh)
-9. [Data sources & attribution](#6-data-sources--attribution)
+4. [How this maps to the eval-first methodology](#-how-this-maps-to-the-eval-first-methodology)
+5. [Prerequisites](#2-prerequisites)
+6. [Execution order at a glance](#3-execution-order-at-a-glance)
+7. [Step-by-step](#4-step-by-step)
+8. [Optional labs](#-optional-labs)
+9. [Cleanup](#5-cleanup--99-cleanupsh)
+10. [Data sources & attribution](#6-data-sources--attribution)
 
 ---
 
@@ -60,12 +61,15 @@ Bedrock AgentCore:
 
 ### 🔬 `thelma_eval/` — single-turn RAG quality (THELMA)
 
-Runs at **`TRACE`** level. Decomposes one Q&A into `(question, retrieved sources, answer)` and scores
-**6 metrics** (0–1):
+Runs at **`TRACE`** level (the *glass-box* granularity — it inspects one execution trace).
+Decomposes one Q&A into `(question, retrieved sources, answer)`. The THELMA paper defines **6
+metrics**; our implementation reports **Source Precision as two separate scores** (chunk-level vs.
+fact-level), so you'll see **7 numbers** per trace (all 0–1):
 
 | Metric | Name | Question it answers |
 |:------:|------|---------------------|
-| **SP**  | Source Precision        | Are the retrieved docs relevant? |
+| **SP1** | Source Precision (chunk) | Are the retrieved **chunks** relevant as a whole? |
+| **SP2** | Source Precision (fact)  | Of the **facts inside** those chunks, how many are actually relevant? |
 | **SQC** | Source Query Coverage   | Do the sources cover the question? |
 | **RP**  | Response Precision      | Is the answer on-topic? |
 | **RQC** | Response Query Coverage | Is the question fully answered? |
@@ -73,15 +77,23 @@ Runs at **`TRACE`** level. Decomposes one Q&A into `(question, retrieved sources
 | 🎯 **GR** | **Groundedness** | **Is every sentence backed by a source? (no hallucination, pass ≥ 0.7)** |
 
 Its real value is **diagnosis** — the *interplay* of these scores points at which RAG component to fix
-(retriever vs. prompt vs. source docs).
+(retriever vs. prompt vs. source docs). The SP1/SP2 split is the key example: a **high SP1 with a low
+SP2** means the chunk looks on-topic but most of the *facts* it carries are noise — exactly the symptom
+of dirty data mixed into the source documents.
 
 ### 🎯 `mtg_eval/` — multi-turn goal success (Mind the Goal)
 
-Runs at **`SESSION`** level in three steps: **segment goals** (merge turns about the same thing),
-**judge success/failure** (a goal fails if any turn fails), then compute **GSR** = *Goal Success Rate*
-(successful goals ÷ total goals, pass ≥ 80%) and attribute each failure via **RCOF** = *Root Cause of
-Failure* (7-category defect taxonomy). Answers *"did the agent actually accomplish what the user came
-for?"*
+Runs at **`SESSION`** level (the *black-box* granularity — end-to-end goal outcome) in three steps:
+**segment goals** (merge turns about the same thing), **judge success/failure** (a goal fails if any
+turn fails), then compute **GSR** = *Goal Success Rate* (successful goals ÷ total goals, pass ≥ 80%) and
+attribute each failure via **RCOF** = *Root Cause of Failure* (7-category defect taxonomy). Answers
+*"did the agent actually accomplish what the user came for?"*
+
+> [!NOTE]
+> The **TRACE → glass-box** and **SESSION → black-box** mapping is deliberate: AgentCore's
+> session / trace / span levels line up with the three evaluation granularities (black-box / glass-box
+> / white-box) from the companion white paper. These two evaluators are **custom L2 evaluators**
+> (calibrated LLM-as-a-judge) in that framework — see [below](#-how-this-maps-to-the-eval-first-methodology).
 
 Both use judge model `us.amazon.nova-2-lite-v1:0`. Each evaluator bundles its algorithm, an **adapter
 layer** (ADOT span → evaluator input), and a Lambda handler.
@@ -172,6 +184,27 @@ flowchart LR
 > The payoff is the contrast: a prompt change improves grounding where retrieval is good, but **can't**
 > fix a question whose retrieval failed (`SP2≈0`). That contrast is exactly how THELMA distinguishes
 > *"fix the Prompt"* from *"fix retrieval."*
+
+---
+
+## 🧭 How this maps to the eval-first methodology
+
+This sample is the **hands-on companion** to a four-part white paper on production-grade enterprise
+agents. Where the white paper gives the *why* and the framework, this repo lets you run it end to end.
+The mapping:
+
+| White-paper concept | What you run here |
+|---------------------|-------------------|
+| **ADLC** — the build → run → trace → evaluate → diagnose → optimize flywheel | The whole script sequence; `10-optimize-prompt.sh` closes the loop |
+| **Three evaluation granularities** — black-box / glass-box / white-box, aligned to AgentCore **session / trace / span** | **Mind the Goal = SESSION (black-box)**, **THELMA = TRACE (glass-box)** |
+| **Three-layer evidence weighting** — L1 code / L2 calibrated LLM-judge / L3 refuse-by-default | THELMA & Mind the Goal are **custom L2 evaluators**; `13-judge-stability.sh` checks L2 reliability, with human TPR/TNR calibration as the L3 complement |
+| **Decision-first KPIs** — Decision Quality / Time-to-Action / Cognitive Offload | quality (GR) + speed & cost (`11-cost-latency.sh`) give you the first two dimensions as hard numbers |
+| **AgentCore Evaluations** — built-in + custom evaluators | Both evaluators here are **custom** (code-packaged LLM-as-a-judge), deployed via `08-create-evaluators.sh` |
+
+> [!TIP]
+> `10-optimize-prompt.sh` is a **manual** optimize-and-re-evaluate loop. AgentCore **Optimization**
+> (public preview) productizes the same idea — Recommendations, versioned Configuration bundles, and
+> A/B testing on top of AgentCore Evaluations. The manual loop here is the conceptual primitive behind it.
 
 ---
 
@@ -388,7 +421,7 @@ generate a trace the evaluators can read:
 Registers and deploys the two custom code-based evaluators, then grants their execution roles Bedrock
 invoke permission (needed for the LLM-judge):
 
-- `thelma_rag_quality` — **TRACE** level, RAG 6-metric quality, primary score = **Groundedness**
+- `thelma_rag_quality` — **TRACE** level, RAG quality (7 scores; see the metric table above), primary score = **Groundedness**
 - `mtg_goal_success` — **SESSION** level, **Goal Success Rate (GSR)** + failure attribution (**RCOF**)
 
 See [`evaluators/README.md`](evaluators/README.md) for what each metric means.
@@ -400,7 +433,7 @@ See [`evaluators/README.md`](evaluators/README.md) for what each metric means.
 ### 🟠 Step 12 — `09-run-eval.sh`  ·  _Phase 4_
 By default, runs the **3 golden questions** (performance review / benefits / sick leave) to produce
 traces, waits for them to index, then evaluates those traces and prints, for each: the **Query**, a
-truncated **Response**, and the **score** (THELMA 6-metric breakdown + diagnosis, and Mind the Goal GSR
+truncated **Response**, and the **score** (THELMA 7-score breakdown + diagnosis, and Mind the Goal GSR
 + RCOF).
 
 ```bash
