@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="980" viewBox="0 0 1640 980" font-family="Heiti SC, PingFang SC, sans-serif">
+  <rect width="1640" height="980" fill="#f7f9fc"/>
+  <rect width="1640" height="8" fill="#ec7a25"/>
+
+  <!-- title -->
+  <text x="820" y="84" text-anchor="middle" fill="#1b2a4a" font-size="48" font-weight="bold" letter-spacing="1">Reading THELMA — which score pattern points at which fix</text>
+  <text x="820" y="126" text-anchor="middle" fill="#5b6b86" font-size="22">7 scores per trace (0–1). Don't read them one by one — read the interplay.</text>
+
+  <!-- ===== the 7 scores band ===== -->
+  <!-- retrieval-side group (blue) -->
+  <rect x="80" y="168" width="650" height="170" rx="12" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
+  <rect x="80" y="168" width="8" height="170" rx="4" fill="#2f6db3"/>
+  <text x="108" y="202" fill="#2f6db3" font-size="20" font-weight="bold">Retrieval side — did we fetch the right facts?</text>
+  <!-- chips -->
+  <rect x="106" y="222" width="190" height="96" rx="9" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="201" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">SP1</text>
+  <text x="201" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Source Precision</text>
+  <text x="201" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">· chunk level</text>
+  <rect x="312" y="222" width="190" height="96" rx="9" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="407" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">SP2</text>
+  <text x="407" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Source Precision</text>
+  <text x="407" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">· fact level</text>
+  <rect x="518" y="222" width="190" height="96" rx="9" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="613" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">SQC</text>
+  <text x="613" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Source Query</text>
+  <text x="613" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">Coverage</text>
+
+  <!-- response-side group (orange) -->
+  <rect x="760" y="168" width="540" height="170" rx="12" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
+  <rect x="760" y="168" width="8" height="170" rx="4" fill="#d9722e"/>
+  <text x="788" y="202" fill="#d9722e" font-size="20" font-weight="bold">Response side — good use of them?</text>
+  <rect x="786" y="222" width="158" height="96" rx="9" fill="#ffffff" stroke="#eebb88" stroke-width="1.5"/>
+  <text x="865" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">RP</text>
+  <text x="865" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Response</text>
+  <text x="865" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">Precision</text>
+  <rect x="960" y="222" width="158" height="96" rx="9" fill="#ffffff" stroke="#eebb88" stroke-width="1.5"/>
+  <text x="1039" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">RQC</text>
+  <text x="1039" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Response Query</text>
+  <text x="1039" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">Coverage</text>
+  <rect x="1134" y="222" width="150" height="96" rx="9" fill="#ffffff" stroke="#eebb88" stroke-width="1.5"/>
+  <text x="1209" y="256" text-anchor="middle" fill="#1b2a4a" font-size="26" font-weight="bold">SD</text>
+  <text x="1209" y="282" text-anchor="middle" fill="#5b6b86" font-size="15">Self-</text>
+  <text x="1209" y="302" text-anchor="middle" fill="#5b6b86" font-size="15">Distinctness</text>
+
+  <!-- GR headline card (dark) -->
+  <rect x="1330" y="168" width="230" height="170" rx="12" fill="#1b2a4a"/>
+  <text x="1445" y="212" text-anchor="middle" fill="#ffd9b3" font-size="28" font-weight="bold">GR</text>
+  <text x="1445" y="244" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="bold">Groundedness</text>
+  <text x="1445" y="278" text-anchor="middle" fill="#cdd8ea" font-size="16">The headline.</text>
+  <text x="1445" y="300" text-anchor="middle" fill="#cdd8ea" font-size="16">Pass &#8805; 0.7 —</text>
+  <text x="1445" y="320" text-anchor="middle" fill="#cdd8ea" font-size="16">every sentence sourced?</text>
+
+  <!-- divider label -->
+  <text x="820" y="388" text-anchor="middle" fill="#1b2a4a" font-size="24" font-weight="bold">Read the interplay  →  what to fix</text>
+
+  <!-- ===== diagnosis cards ===== -->
+  <!-- card 1: dirty data (orange) -->
+  <rect x="80" y="414" width="470" height="300" rx="12" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
+  <rect x="80" y="414" width="8" height="300" rx="4" fill="#d9722e"/>
+  <text x="112" y="456" fill="#1b2a4a" font-size="27" font-weight="bold">SP1 high &#183; SP2 low</text>
+  <text x="112" y="500" fill="#3a4a66" font-size="19">The chunk looks on-topic, but most</text>
+  <text x="112" y="526" fill="#3a4a66" font-size="19">of the facts inside it are noise.</text>
+  <text x="112" y="566" fill="#7a5a3a" font-size="18">Root cause: dirty / cross-domain</text>
+  <text x="112" y="592" fill="#7a5a3a" font-size="18">data mixed into the source docs.</text>
+  <rect x="112" y="630" width="406" height="58" rx="9" fill="#ffffff" stroke="#eebb88" stroke-width="1.5"/>
+  <text x="132" y="666" fill="#d9722e" font-size="20" font-weight="bold">Fix:  clean source docs / retriever</text>
+
+  <!-- card 2: prompt (blue) -->
+  <rect x="585" y="414" width="470" height="300" rx="12" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
+  <rect x="585" y="414" width="8" height="300" rx="4" fill="#2f6db3"/>
+  <text x="617" y="456" fill="#1b2a4a" font-size="27" font-weight="bold">SQC&#8595; &#183; RQC&#8593; &#183; GR&#8595;</text>
+  <text x="617" y="500" fill="#3a4a66" font-size="19">Sources are thin, or the answer</text>
+  <text x="617" y="526" fill="#3a4a66" font-size="19">drifts off the retrieved content.</text>
+  <text x="617" y="566" fill="#3f5a82" font-size="18">Root cause: the System Prompt lets</text>
+  <text x="617" y="592" fill="#3f5a82" font-size="18">it wander / hallucinate.</text>
+  <rect x="617" y="630" width="406" height="58" rx="9" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="637" y="666" fill="#2f6db3" font-size="20" font-weight="bold">Fix:  tighten the Prompt</text>
+
+  <!-- card 3: retrieval failure (dark/red accent) -->
+  <rect x="1090" y="414" width="470" height="300" rx="12" fill="#fbecea" stroke="#e3a99f" stroke-width="2"/>
+  <rect x="1090" y="414" width="8" height="300" rx="4" fill="#b5402e"/>
+  <text x="1122" y="456" fill="#1b2a4a" font-size="27" font-weight="bold">SP2 &#8776; 0</text>
+  <text x="1122" y="500" fill="#3a4a66" font-size="19">Retrieval flat-out failed — no</text>
+  <text x="1122" y="526" fill="#3a4a66" font-size="19">relevant facts came back at all.</text>
+  <text x="1122" y="566" fill="#8a3a2c" font-size="18" font-weight="bold">A prompt change CAN'T fix this.</text>
+  <text x="1122" y="592" fill="#8a3a2c" font-size="18">The gap is upstream, in retrieval.</text>
+  <rect x="1122" y="630" width="406" height="58" rx="9" fill="#ffffff" stroke="#e3a99f" stroke-width="1.5"/>
+  <text x="1142" y="666" fill="#b5402e" font-size="20" font-weight="bold">Fix:  retriever / source docs</text>
+
+  <!-- conclusion box -->
+  <rect x="80" y="752" width="1480" height="120" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="110" y="794" fill="#1b2a4a" font-size="22" font-weight="bold">How to use it</text>
+  <text x="110" y="828" fill="#3a4a66" font-size="19">GR is the pass/fail headline; the other six tell you <tspan font-weight="bold">why</tspan> it's low and <tspan font-weight="bold">where</tspan> to fix. That's the payoff —</text>
+  <text x="110" y="856" fill="#3a4a66" font-size="19">a prompt fix raises grounding where retrieval is good, but can't rescue a question whose retrieval failed (SP2&#8776;0).</text>
+
+  <text x="1560" y="942" text-anchor="end" fill="#9aa8bf" font-size="15">Eval-First · THELMA diagnosis</text>
+</svg>

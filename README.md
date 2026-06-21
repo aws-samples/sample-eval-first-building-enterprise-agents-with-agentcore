@@ -81,6 +81,8 @@ Its real value is **diagnosis** — the *interplay* of these scores points at wh
 SP2** means the chunk looks on-topic but most of the *facts* it carries are noise — exactly the symptom
 of dirty data mixed into the source documents.
 
+![Reading THELMA — the 7 scores per trace (SP1, SP2, SQC on the retrieval side; RP, RQC, SD on the response side; GR as the headline), and which score pattern points at which fix: SP1 high with SP2 low means dirty source docs; SQC down with RQC up and GR down means tighten the prompt; SP2 near zero means retrieval failed and a prompt change can't help.](assets/thelma-diagnosis.png)
+
 ### 🎯 `mtg_eval/` — multi-turn goal success (Mind the Goal)
 
 Runs at **`SESSION`** level (the *black-box* granularity — end-to-end goal outcome) in three steps:
@@ -114,49 +116,9 @@ The agent runs as an AgentCore **Harness** in VPC mode. Every invoke pulls Memor
 context, calls HR tools through the **Gateway** (MCP), and emits OTel trace spans that flow to
 CloudWatch — where the two evaluators read them.
 
-```mermaid
-flowchart LR
-    User(["👤 Employee<br/>actor-id"])
+![Architecture — the agent runs as an AgentCore Harness in VPC mode, calls HR tools through the Gateway, reads from a Knowledge Base on S3 Vectors, and emits OTel spans to CloudWatch where THELMA and Mind the Goal evaluate them with Nova 2 Lite as judge.](assets/architecture.png)
 
-    subgraph Runtime["🧠 AgentCore Harness — VPC mode"]
-        direction TB
-        Agent["Agent + System Prompt"]
-        Mem[("🗂️ Memory<br/>long & short term")]
-        Skills["📄 Skills<br/>BYO Filesystem"]
-        Agent <--> Mem
-        Agent <--> Skills
-    end
-
-    subgraph Tools["🚪 Gateway (MCP · AWS_IAM)"]
-        direction TB
-        Lambda["⚙️ HR Tools Lambda"]
-        Lambda --- T1["retrieve_hr_policy"]
-        Lambda --- T2["check_leave_balance"]
-        Lambda --- T3["submit_leave_request"]
-        Lambda --- T4["query_salary_info"]
-    end
-
-    KB[("📚 Knowledge Base<br/>Amazon S3 Vectors")]
-    Docs["📁 S3 — HR policy docs<br/>(noisy, cross-domain)"]
-
-    subgraph Eval["📊 Evaluation"]
-        direction TB
-        CW["☁️ CloudWatch<br/>Transaction Search"]
-        Thelma["🔬 THELMA<br/>TRACE · RAG quality"]
-        MTG["🎯 Mind the Goal<br/>SESSION · GSR + RCOF"]
-        CW --> Thelma
-        CW --> MTG
-    end
-
-    User -->|question| Agent
-    Agent -->|tool call| Lambda
-    Lambda -->|query| KB
-    Docs -->|ingest| KB
-    Agent -.->|OTel spans| CW
-    Judge["⚖️ Nova 2 Lite — LLM-as-judge"]
-    Thelma -.-> Judge
-    MTG -.-> Judge
-```
+> Solid lines are the live call path; dashed lines are trace/judge flow.
 
 ---
 
@@ -165,20 +127,7 @@ flowchart LR
 The workshop closes the **Agent Development Life Cycle**: build, run, trace, evaluate, _diagnose_, then
 optimize — and prove the fix with a re-evaluation.
 
-```mermaid
-flowchart LR
-    Build["🏗️ Build<br/>KB · Gateway · Harness · Memory"]
-    Run["💬 Run<br/>golden questions"]
-    Trace["🛰️ Trace<br/>OTel → CloudWatch"]
-    Evaluate["📊 Evaluate<br/>THELMA + Mind the Goal"]
-    Diagnose{"🩺 Diagnose<br/>Prompt or Retrieval?"}
-    Optimize["✨ Optimize prompt<br/>anti-hallucination"]
-
-    Build --> Run --> Trace --> Evaluate --> Diagnose
-    Diagnose -->|"SQC↓ RQC↑ GR↓ / RP↓"| Optimize
-    Optimize -->|redeploy & re-ask| Run
-    Diagnose -->|"SP2≈0 retrieval failure"| FixData["🗂️ Fix retriever / source docs"]
-```
+![The eval-first loop as a flywheel — Run, Trace, Evaluate, Diagnose, Optimize, then repeat. Build is a one-time entry. Diagnose splits the work: tighten the prompt (the ring) or fix retrieval (a branch out, when SP2 is near zero). Every fix is proven by a re-evaluation.](assets/adlc-flywheel.png)
 
 > [!TIP]
 > The payoff is the contrast: a prompt change improves grounding where retrieval is good, but **can't**

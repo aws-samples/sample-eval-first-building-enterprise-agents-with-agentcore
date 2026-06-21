@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1680" height="1000" viewBox="0 0 1680 1000" font-family="Heiti SC, PingFang SC, sans-serif">
+  <rect width="1680" height="1000" fill="#f7f9fc"/>
+  <rect width="1680" height="8" fill="#ec7a25"/>
+
+  <defs>
+    <marker id="arrB" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#2f6db3"/></marker>
+    <marker id="arrO" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#d9722e"/></marker>
+    <marker id="arrG" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#7a8aa3"/></marker>
+  </defs>
+
+  <!-- title -->
+  <text x="840" y="74" text-anchor="middle" fill="#1b2a4a" font-size="46" font-weight="bold">Architecture at a glance</text>
+  <text x="840" y="114" text-anchor="middle" fill="#5b6b86" font-size="22">An AgentCore Harness answers HR questions — and emits OTel traces that two custom evaluators read.</text>
+
+  <!-- ============ main call flow (top) ============ -->
+  <!-- Employee -->
+  <rect x="70" y="300" width="150" height="110" rx="12" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="145" y="346" text-anchor="middle" font-size="34">&#128100;</text>
+  <text x="145" y="378" text-anchor="middle" fill="#1b2a4a" font-size="19" font-weight="bold">Employee</text>
+  <text x="145" y="398" text-anchor="middle" fill="#5b6b86" font-size="15">actor-id</text>
+
+  <!-- Harness VPC frame -->
+  <rect x="262" y="200" width="470" height="320" rx="14" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
+  <image x="280" y="214" width="34" height="34" xlink:href="icons/Virtual-private-cloud-VPC_32.svg"/>
+  <text x="324" y="237" fill="#2f6db3" font-size="19" font-weight="bold">AgentCore Harness &#183; VPC mode</text>
+  <!-- Agent -->
+  <image x="300" y="300" width="80" height="80" xlink:href="icons/Arch_Amazon-Bedrock-AgentCore_64.svg"/>
+  <text x="340" y="402" text-anchor="middle" fill="#1b2a4a" font-size="17" font-weight="bold">Agent</text>
+  <text x="340" y="423" text-anchor="middle" fill="#5b6b86" font-size="14">+ System Prompt</text>
+  <!-- Memory -->
+  <rect x="470" y="280" width="234" height="84" rx="10" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="490" y="313" fill="#1b2a4a" font-size="17" font-weight="bold">&#128451; Memory</text>
+  <text x="490" y="340" fill="#5b6b86" font-size="14">long &amp; short term</text>
+  <!-- Skills -->
+  <rect x="470" y="376" width="234" height="84" rx="10" fill="#ffffff" stroke="#9bbce0" stroke-width="1.5"/>
+  <text x="490" y="409" fill="#1b2a4a" font-size="17" font-weight="bold">&#128196; Skills</text>
+  <text x="490" y="436" fill="#5b6b86" font-size="14">BYO Filesystem</text>
+  <!-- Agent <-> Memory / Skills -->
+  <g stroke="#9bbce0" stroke-width="2" fill="none">
+    <line x1="384" y1="328" x2="466" y2="320"/>
+    <line x1="384" y1="356" x2="466" y2="414"/>
+  </g>
+
+  <!-- Gateway frame -->
+  <rect x="772" y="200" width="430" height="320" rx="14" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
+  <text x="792" y="237" fill="#d9722e" font-size="19" font-weight="bold">&#128682; Gateway &#183; MCP &#183; AWS_IAM</text>
+  <!-- Lambda -->
+  <image x="800" y="300" width="80" height="80" xlink:href="icons/Arch_AWS-Lambda_64.svg"/>
+  <text x="840" y="402" text-anchor="middle" fill="#1b2a4a" font-size="16" font-weight="bold">HR Tools</text>
+  <text x="840" y="422" text-anchor="middle" fill="#5b6b86" font-size="14">Lambda</text>
+  <!-- 4 tools -->
+  <g font-size="14.5" fill="#7a5a3a">
+    <rect x="930" y="262" width="252" height="44" rx="8" fill="#ffffff" stroke="#eebb88" stroke-width="1.3"/>
+    <text x="946" y="290">retrieve_hr_policy</text>
+    <rect x="930" y="314" width="252" height="44" rx="8" fill="#ffffff" stroke="#eebb88" stroke-width="1.3"/>
+    <text x="946" y="342">check_leave_balance</text>
+    <rect x="930" y="366" width="252" height="44" rx="8" fill="#ffffff" stroke="#eebb88" stroke-width="1.3"/>
+    <text x="946" y="394">submit_leave_request</text>
+    <rect x="930" y="418" width="252" height="44" rx="8" fill="#ffffff" stroke="#eebb88" stroke-width="1.3"/>
+    <text x="946" y="446">query_salary_info</text>
+  </g>
+  <g stroke="#eebb88" stroke-width="1.5" fill="none">
+    <line x1="884" y1="332" x2="926" y2="284"/>
+    <line x1="884" y1="344" x2="926" y2="336"/>
+    <line x1="884" y1="356" x2="926" y2="388"/>
+    <line x1="884" y1="368" x2="926" y2="440"/>
+  </g>
+
+  <!-- Knowledge Base -->
+  <image x="1320" y="248" width="80" height="80" xlink:href="icons/Arch_Amazon-Bedrock_64.svg"/>
+  <text x="1360" y="350" text-anchor="middle" fill="#1b2a4a" font-size="17" font-weight="bold">Knowledge Base</text>
+  <text x="1360" y="371" text-anchor="middle" fill="#5b6b86" font-size="14">Amazon S3 Vectors</text>
+  <!-- S3 docs -->
+  <image x="1320" y="420" width="80" height="80" xlink:href="icons/Arch_Amazon-Simple-Storage-Service_64.svg"/>
+  <text x="1360" y="522" text-anchor="middle" fill="#1b2a4a" font-size="16" font-weight="bold">HR policy docs</text>
+  <text x="1360" y="542" text-anchor="middle" fill="#5b6b86" font-size="14">noisy, cross-domain</text>
+
+  <!-- main flow arrows -->
+  <g stroke="#2f6db3" stroke-width="2.6" fill="none">
+    <line x1="222" y1="350" x2="296" y2="350" marker-end="url(#arrB)"/>
+    <line x1="734" y1="350" x2="796" y2="350" marker-end="url(#arrB)"/>
+    <line x1="1204" y1="320" x2="1314" y2="300" marker-end="url(#arrB)"/>
+  </g>
+  <text x="259" y="338" text-anchor="middle" fill="#3a4a66" font-size="14">question</text>
+  <text x="765" y="338" text-anchor="middle" fill="#3a4a66" font-size="14">tool call</text>
+  <text x="1262" y="300" text-anchor="middle" fill="#3a4a66" font-size="14">query</text>
+  <!-- ingest: S3 docs -> KB -->
+  <line x1="1360" y1="416" x2="1360" y2="334" stroke="#d9722e" stroke-width="2.6" fill="none" marker-end="url(#arrO)"/>
+  <text x="1404" y="380" fill="#7a5a3a" font-size="14">ingest</text>
+
+  <!-- divider -->
+  <line x1="70" y1="600" x2="1610" y2="600" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="840" y="592" text-anchor="middle" fill="#1b2a4a" font-size="20" font-weight="bold">Evaluation &#183; read the traces</text>
+
+  <!-- ============ evaluation band (bottom) ============ -->
+  <!-- CloudWatch -->
+  <image x="300" y="650" width="80" height="80" xlink:href="icons/Arch_Amazon-CloudWatch_64.svg"/>
+  <text x="340" y="752" text-anchor="middle" fill="#1b2a4a" font-size="17" font-weight="bold">CloudWatch</text>
+  <text x="340" y="773" text-anchor="middle" fill="#5b6b86" font-size="14">Transaction Search</text>
+
+  <!-- THELMA -->
+  <rect x="560" y="638" width="430" height="84" rx="12" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
+  <rect x="560" y="638" width="8" height="84" rx="4" fill="#2f6db3"/>
+  <text x="586" y="672" fill="#1b2a4a" font-size="19" font-weight="bold">&#128300; THELMA</text>
+  <text x="586" y="700" fill="#5b6b86" font-size="15">TRACE &#183; glass-box &#183; RAG quality (7 scores)</text>
+  <!-- Mind the Goal -->
+  <rect x="560" y="740" width="430" height="84" rx="12" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
+  <rect x="560" y="740" width="8" height="84" rx="4" fill="#d9722e"/>
+  <text x="586" y="774" fill="#1b2a4a" font-size="19" font-weight="bold">&#127919; Mind the Goal</text>
+  <text x="586" y="802" fill="#7a5a3a" font-size="15">SESSION &#183; black-box &#183; GSR + RCOF</text>
+
+  <!-- Nova judge -->
+  <rect x="1080" y="690" width="360" height="84" rx="12" fill="#1b2a4a"/>
+  <image x="1098" y="697" width="70" height="70" xlink:href="icons/Arch_Amazon-Bedrock_64.svg"/>
+  <text x="1300" y="726" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="bold">Nova 2 Lite</text>
+  <text x="1300" y="752" text-anchor="middle" fill="#cdd8ea" font-size="15">LLM-as-judge</text>
+
+  <!-- Agent -> CloudWatch (OTel spans, dashed) -->
+  <path d="M 340 384 L 340 646" stroke="#7a8aa3" stroke-width="2.4" fill="none" stroke-dasharray="7 6" marker-end="url(#arrG)"/>
+  <text x="356" y="566" fill="#5b6b86" font-size="14">OTel spans</text>
+
+  <!-- CloudWatch -> THELMA / MtG -->
+  <g stroke="#2f6db3" stroke-width="2.6" fill="none">
+    <line x1="384" y1="678" x2="556" y2="678" marker-end="url(#arrB)"/>
+    <line x1="384" y1="702" x2="556" y2="780" marker-end="url(#arrB)"/>
+  </g>
+  <!-- THELMA / MtG -> Nova (dashed) -->
+  <g stroke="#7a8aa3" stroke-width="2.4" fill="none" stroke-dasharray="7 6">
+    <line x1="994" y1="680" x2="1076" y2="720" marker-end="url(#arrG)"/>
+    <line x1="994" y1="782" x2="1076" y2="744" marker-end="url(#arrG)"/>
+  </g>
+
+  <!-- bottom note -->
+  <rect x="70" y="868" width="1540" height="86" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="100" y="906" fill="#1b2a4a" font-size="19" font-weight="bold">Solid = live call path &#183; dashed = trace / judge path.</text>
+  <text x="100" y="936" fill="#3a4a66" font-size="17">The KB is seeded with intentionally noisy data so THELMA surfaces real retrieval problems, not a clean toy result.</text>
+
+  <text x="1610" y="984" text-anchor="end" fill="#9aa8bf" font-size="14">Eval-First &#183; AgentCore</text>
+</svg>

@@ -64,6 +64,8 @@
 
 它真正的价值在于**诊断**——这些分数之间的*相互关系*能指出该修 RAG 的哪个环节（检索器 vs. 提示词 vs. 源文档）。SP1/SP2 的拆分就是最典型的例子：**SP1 高但 SP2 低**，说明 chunk 看着切题，但它携带的*事实*大多是噪声——这正是源文档里混入脏数据的征兆。
 
+![读懂 THELMA —— 每条 trace 的 7 个分数(检索侧 SP1、SP2、SQC;回答侧 RP、RQC、SD;以及主分 GR),以及哪种分数组合指向哪种修法:SP1 高 SP2 低 = 源文档脏;SQC 降、RQC 升、GR 降 = 收紧提示词;SP2 ≈ 0 = 检索本身失败,改提示词修不了。](assets/thelma-diagnosis.png)
+
 ### 🎯 `mtg_eval/` —— 多轮目标达成（Mind the Goal）
 
 在 **`SESSION`** 级别运行（即*黑盒*粒度——端到端的目标达成结果），分三步：**切分目标**（把围绕同一件事的多轮合并成一个目标）、**判定成功/失败**（一个目标里任意一轮失败则整个目标算失败），然后算出 **GSR** = *Goal Success Rate（目标达成率）*（成功目标数 ÷ 总目标数，通过线 ≥ 80%），并用 **RCOF** = *Root Cause of Failure（失败根因）*（7 类缺陷归因）给每个失败定位。它回答的是*「Agent 到底有没有完成用户来办的事」*。
@@ -84,49 +86,9 @@
 
 Agent 以 VPC 模式跑在一个 AgentCore **Harness** 里。每次调用都会把 Memory + Skills 拉进上下文，通过 **Gateway**（MCP）调用 HR 工具，并吐出 OTel trace span 流向 CloudWatch——两个评估器就在那里读取它们。
 
-```mermaid
-flowchart LR
-    User(["👤 员工<br/>actor-id"])
+![架构图 —— Agent 以 VPC 模式跑在 AgentCore Harness 里，通过 Gateway 调用 HR 工具，从 S3 Vectors 上的知识库检索，并向 CloudWatch 吐出 OTel span，THELMA 和 Mind the Goal 在那里以 Nova 2 Lite 为裁判进行评估。](assets/architecture.png)
 
-    subgraph Runtime["🧠 AgentCore Harness —— VPC 模式"]
-        direction TB
-        Agent["Agent + System Prompt"]
-        Mem[("🗂️ Memory<br/>长期 & 短期")]
-        Skills["📄 Skills<br/>BYO Filesystem"]
-        Agent <--> Mem
-        Agent <--> Skills
-    end
-
-    subgraph Tools["🚪 Gateway（MCP · AWS_IAM）"]
-        direction TB
-        Lambda["⚙️ HR Tools Lambda"]
-        Lambda --- T1["retrieve_hr_policy"]
-        Lambda --- T2["check_leave_balance"]
-        Lambda --- T3["submit_leave_request"]
-        Lambda --- T4["query_salary_info"]
-    end
-
-    KB[("📚 知识库<br/>Amazon S3 Vectors")]
-    Docs["📁 S3 —— HR 政策文档<br/>（带噪声、跨领域）"]
-
-    subgraph Eval["📊 评估"]
-        direction TB
-        CW["☁️ CloudWatch<br/>Transaction Search"]
-        Thelma["🔬 THELMA<br/>TRACE · RAG 质量"]
-        MTG["🎯 Mind the Goal<br/>SESSION · GSR + RCOF"]
-        CW --> Thelma
-        CW --> MTG
-    end
-
-    User -->|提问| Agent
-    Agent -->|工具调用| Lambda
-    Lambda -->|查询| KB
-    Docs -->|入库| KB
-    Agent -.->|OTel spans| CW
-    Judge["⚖️ Nova 2 Lite —— LLM 裁判"]
-    Thelma -.-> Judge
-    MTG -.-> Judge
-```
+> 实线是真实调用路径；虚线是 trace / 裁判流。
 
 ---
 
@@ -134,20 +96,7 @@ flowchart LR
 
 本 workshop 闭合了 **Agent 开发生命周期（ADLC）**：构建、运行、采集 trace、评估、_诊断_，再优化——并用一次重新评估来证明修复确实有效。
 
-```mermaid
-flowchart LR
-    Build["🏗️ 构建<br/>KB · Gateway · Harness · Memory"]
-    Run["💬 运行<br/>golden 问题"]
-    Trace["🛰️ 采集 Trace<br/>OTel → CloudWatch"]
-    Evaluate["📊 评估<br/>THELMA + Mind the Goal"]
-    Diagnose{"🩺 诊断<br/>是提示词还是检索的问题？"}
-    Optimize["✨ 优化提示词<br/>抗幻觉约束"]
-
-    Build --> Run --> Trace --> Evaluate --> Diagnose
-    Diagnose -->|"SQC↓ RQC↑ GR↓ / RP↓"| Optimize
-    Optimize -->|重新部署并重问| Run
-    Diagnose -->|"SP2≈0 检索失败"| FixData["🗂️ 修检索器 / 源文档"]
-```
+![Eval-First 飞轮 —— 运行、采集 Trace、评估、诊断、优化，然后重复。Build 是一次性入口。诊断把工作一分为二:收紧提示词(环上)或修检索(当 SP2 ≈ 0 时分叉出去)。每次修复都用一次重新评估来证明。](assets/adlc-flywheel.png)
 
 > [!TIP]
 > 最有说服力的是这个对比：改提示词能在「检索本来就好」的地方提升有据性，但**修不了**一个检索本身就失败（`SP2≈0`）的问题。这个对比恰恰就是 THELMA 区分*「该修提示词」*还是*「该修检索」*的方式。
