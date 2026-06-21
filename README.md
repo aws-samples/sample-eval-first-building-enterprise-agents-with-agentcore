@@ -13,6 +13,8 @@
 ![License](https://img.shields.io/badge/license-MIT--0-blue)
 ![Setup](https://img.shields.io/badge/end--to--end-~25--30_min-success)
 
+**English** | [简体中文](README.zh-CN.md)
+
 </div>
 
 ---
@@ -39,8 +41,9 @@
 4. [Prerequisites](#2-prerequisites)
 5. [Execution order at a glance](#3-execution-order-at-a-glance)
 6. [Step-by-step](#4-step-by-step)
-7. [Cleanup](#5-cleanup--99-cleanupsh)
-8. [Data sources & attribution](#6-data-sources--attribution)
+7. [Optional labs](#-optional-labs)
+8. [Cleanup](#5-cleanup--99-cleanupsh)
+9. [Data sources & attribution](#6-data-sources--attribution)
 
 ---
 
@@ -236,6 +239,9 @@ Total ≈ **25–30 minutes** of mostly-unattended waiting.
 | 11 | `08-create-evaluators.sh` | 4 | ~2 min | Register + deploy THELMA & Mind the Goal evaluators |
 | 12 | `09-run-eval.sh` | 4 | ~2–3 min | Run the 3 golden questions, then evaluate them (Query + Response + scores) |
 | 13 | `10-optimize-prompt.sh` | 5 | ~6–8 min | Optimize the System Prompt (anti-hallucination), redeploy, re-run + re-evaluate |
+| — | `11-cost-latency.sh` | 6 | ~30s | _Optional._ Read latency + token + cost per trace from `aws/spans` (no new resources) |
+| — | `12-compare-models.sh` | — | ~10–15 min | _Optional lab A._ Swap the model, redeploy, re-run + re-evaluate, compare quality/cost/latency, then restore |
+| — | `13-judge-stability.sh` | — | ~1–2 min | _Optional lab B._ Score the same trace N times to check judge repeatability |
 | — | `99-cleanup.sh` | — | ~10–15 min | Tear everything down (reverse dep order; idempotent) |
 
 ---
@@ -425,6 +431,71 @@ Prompt" from "fix retrieval."
 > The optimized prompt is in **Chinese** (matching the Chinese KB documents). With the prompt language
 > aligned to the KB, the anti-hallucination constraints land most effectively. Note that LLM-as-judge
 > scores fluctuate between runs — read the trend and the diagnosis, not a single absolute number.
+
+---
+
+## 🧪 Optional labs
+
+These three are **optional extensions** beyond the ~2-hour core path. They reuse the Agent and
+evaluators you already deployed, so **run them before `99-cleanup.sh`** — once cleanup runs, those
+resources are gone.
+
+### ⚙️ `11-cost-latency.sh` — operational metrics (cost & latency)  ·  _Phase 6_
+The opening promise of a decision-first agent is three dimensions: **answers well / answers fast /
+offloads work**. THELMA already quantified *"answers well."* This script delivers the other two — **without
+creating any resources**. It reads the **same traces** you already produced from CloudWatch `aws/spans`
+(the same log group as `09-run-eval.sh`), and for each trace computes **end-to-end latency** (max span
+end − min span start), **input/output tokens** (from `gen_ai.usage.*` span attributes), and **cost**
+(tokens × Nova 2 Lite unit price). The result is the CXO scorecard: quality (GR) + speed (latency) +
+cost ($) side by side.
+
+```bash
+./11-cost-latency.sh            # latency + token + cost for the most recent N retrieval traces
+./11-cost-latency.sh <trace-id> # just one trace
+```
+
+> [!TIP]
+> Token field names vary across SDK versions (`gen_ai.usage.input_tokens` vs `inputTokens` …) — the
+> script tries multiple candidates. Prices (`PRICE_IN` / `PRICE_OUT`, $/1M tokens) default to Nova 2
+> Lite; override via env vars and confirm against the AWS pricing page.
+
+### 🔬 Optional lab A — `12-compare-models.sh` (multi-model comparison)
+Answers the question every CXO asks: *"can we switch to a cheaper/faster model and still be good
+enough?"* It **non-destructively** swaps the Harness model, redeploys, re-runs the same 3 golden
+questions, scores them with the same THELMA, compares quality/cost/latency against the Phase 4 baseline,
+then **restores the baseline model**. Turns "switch the model" from a gut call into a data-backed
+decision.
+
+```bash
+./12-compare-models.sh                          # default comparison model = Nova Pro
+./12-compare-models.sh us.amazon.nova-pro-v1:0  # explicit default
+./12-compare-models.sh us.anthropic.claude-haiku-4-5-20251001-v1:0  # try another family
+```
+
+> [!WARNING]
+> It swaps the model **in `harness.json` and redeploys** — it does **not** re-run `04-deploy.sh` (which
+> would `rm -rf hrassistant` and delete your evaluators). Avoid the **Nova Micro** tier as the
+> comparison model: under the Strands strict ToolUse protocol it often errors with
+> `Model produced invalid sequence as part of ToolUse`, so all three conversations fail and you get no
+> data. That instability is itself a useful evaluation finding — *the model is incompatible with your
+> current agent topology* — but it doesn't make a good first demo.
+
+### ⚖️ Optional lab B — `13-judge-stability.sh` (judge stability)
+Answers the follow-up every CXO asks: *"is your AI judge (THELMA) itself reliable, or does it score
+randomly?"* A lightweight **repeatability** check: it scores the **same trace** N times and looks at the
+spread — consistent scores mean a trustworthy judge; scores bouncing around mean treat the conclusions
+with caution (small models are especially prone to this).
+
+```bash
+./13-judge-stability.sh                # most recent retrieval trace, scored 3 times
+./13-judge-stability.sh <trace-id> [N] # a specific trace, N times (default 3)
+```
+
+> [!NOTE]
+> This workshop's judge defaults to **Nova 2 Lite** (a small model). Small models as LLM-as-judge are
+> usually less consistent than larger ones, so the spread may be wider — which is exactly what this lab
+> surfaces. Repeatability is only one lightweight check; the production-recommended complement is
+> **human-sample calibration** (TPR/TNR against a labeled set).
 
 ---
 

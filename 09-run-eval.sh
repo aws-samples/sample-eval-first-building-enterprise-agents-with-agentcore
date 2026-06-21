@@ -29,6 +29,11 @@ WORKDIR=~/workshop/hrassistant
 ACTOR_ID="employee-001"
 RECENT_N=3                 # 默认评估最近多少条 trace
 LOOKBACK_SECONDS=7200      # 从 aws/spans 回溯多久找最近的 trace（2 小时）
+# 严格时间下界（毫秒级 epoch）。设了就只取此时间之后的 trace，绝不退化拿旧 trace。
+# 12-compare-models.sh 等"换变量重跑"场景必须设这个值，否则当本次 invoke 全失败时，
+# recent_retrieve_traces 会静默拿到上一轮的旧 trace，产出看似成功但完全错误的对比数据。
+# 设法：调脚本前 export SINCE_EPOCH_MS=$(($(date +%s) * 1000))
+SINCE_EPOCH_MS="${SINCE_EPOCH_MS:-}"
 INDEX_POLL_SECONDS=10      # 轮询 aws/spans 的间隔
 INDEX_WAIT_MAX_SECONDS=150 # 等待 trace 索引的超时上限（兜底）
 RESPONSE_TRUNCATE=300      # 打印 Agent 回答时截断到多少字符
@@ -177,10 +182,19 @@ for s in d['run']['results'][0]['sessionScores']:
 
 # 从 aws/spans 取最近 N 条“含检索轮次”的 trace（去重，按时间倒序）
 # 输出每行 "trace_id|session_id"，供 THELMA(按 trace) 与 MtG(按 session) 共用。
+# 若环境变量 SINCE_EPOCH_MS 已设，则严格只取该毫秒时间戳之后的 trace（防止"换变量
+# 重跑、本次失败"时静默退化到旧 trace 产出错误对比数据）。
 recent_retrieve_traces() {
   local n="$1"
+  # 计算时间下界（毫秒）：优先用 SINCE_EPOCH_MS，否则回落到 LOOKBACK_SECONDS
+  local start_ms
+  if [ -n "$SINCE_EPOCH_MS" ]; then
+    start_ms="$SINCE_EPOCH_MS"
+  else
+    start_ms=$(( ($(date +%s) - LOOKBACK_SECONDS) * 1000 ))
+  fi
   aws logs filter-log-events --region $REGION --log-group-name "aws/spans" \
-    --start-time $(( ($(date +%s) - LOOKBACK_SECONDS) * 1000 )) \
+    --start-time "$start_ms" \
     --filter-pattern '"execute_tool hr-tools___retrieve_hr_policy"' \
     --query "events[].message" --output text 2>/dev/null | tr '\t' '\n' | python3 -c "
 import sys, json
@@ -231,6 +245,13 @@ else
   echo "🔎 取最近 $N 条含检索的 trace..."
   ROWS=$(recent_retrieve_traces "$N")
   if [ -z "$ROWS" ]; then
+    if [ -n "$SINCE_EPOCH_MS" ]; then
+      echo "  ❌ 严格时间下界 ($SINCE_EPOCH_MS) 之后未找到任何含检索 trace。"
+      echo "     说明本次 3 个对话全失败（如 ToolUse / ConverseStream 报错），无 trace 可评。"
+      echo "     这本身就是评估结果——"该模型/配置与当前 Agent 拓扑不兼容"。"
+      echo "     检查上面 invoke 输出找具体原因。退出，不退化拿旧 trace。"
+      exit 1
+    fi
     echo "  ⚠️  最近 ${LOOKBACK_SECONDS}s 内未找到含检索的 trace。"
     echo "      若用了 --eval-only，请先不带参数运行本脚本（会自动跑 3 个对话）。"
     exit 0
