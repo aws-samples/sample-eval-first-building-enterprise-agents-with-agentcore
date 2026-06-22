@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1180" viewBox="0 0 1200 1180" font-family="Heiti SC, PingFang SC, sans-serif">
+  <rect width="1200" height="1180" fill="#f7f9fc"/>
+  <rect width="1200" height="8" fill="#ec7a25"/>
+
+  <defs>
+    <marker id="ar" markerWidth="12" markerHeight="12" refX="8.5" refY="3.4" orient="auto"><path d="M0,0 L8.5,3.4 L0,6.8 Z" fill="#2f6db3"/></marker>
+    <marker id="arO" markerWidth="12" markerHeight="12" refX="8.5" refY="3.4" orient="auto"><path d="M0,0 L8.5,3.4 L0,6.8 Z" fill="#d9722e"/></marker>
+    <marker id="arR" markerWidth="12" markerHeight="12" refX="8.5" refY="3.4" orient="auto"><path d="M0,0 L8.5,3.4 L0,6.8 Z" fill="#b5402e"/></marker>
+  </defs>
+
+  <!-- title -->
+  <text x="600" y="74" text-anchor="middle" fill="#1b2a4a" font-size="46" font-weight="bold">The eval-first loop — a flywheel</text>
+  <text x="600" y="114" text-anchor="middle" fill="#5b6b86" font-size="22">Run &#8594; Trace &#8594; Evaluate &#8594; Diagnose &#8594; Optimize &#8594; repeat. Every fix is proven by a re-evaluation.</text>
+
+  <!-- faint ring guide -->
+  <circle cx="600" cy="640" r="330" fill="none" stroke="#e2e8f2" stroke-width="2"/>
+
+  <!-- clockwise ring arrows (R=330, center 600,640) -->
+  <g fill="none" stroke="#2f6db3" stroke-width="3.4">
+    <path d="M702,326 A330,330 0 0,1 867,446" marker-end="url(#ar)"/>
+    <path d="M930,640 A330,330 0 0,1 867,834" marker-end="url(#ar)"/>
+    <path d="M702,954 A330,330 0 0,1 498,954" marker-end="url(#ar)"/>
+    <path d="M333,834 A330,330 0 0,1 270,640" marker-end="url(#ar)"/>
+  </g>
+  <!-- loop-closing arrow (Optimize -> Run), emphasized -->
+  <path d="M333,446 A330,330 0 0,1 498,326" fill="none" stroke="#d9722e" stroke-width="3.8" marker-end="url(#arO)"/>
+
+  <!-- arrow labels -->
+  <text x="250" y="724" text-anchor="end" fill="#3f5a82" font-size="17">prompt fix</text>
+  <text x="276" y="430" text-anchor="end" fill="#a85a2e" font-size="17" font-weight="bold">redeploy &amp; re-ask</text>
+
+  <!-- ===== center hub ===== -->
+  <circle cx="600" cy="640" r="120" fill="#1b2a4a"/>
+  <text x="600" y="618" text-anchor="middle" fill="#ffd9b3" font-size="22" font-weight="bold">Eval-First</text>
+  <text x="600" y="650" text-anchor="middle" fill="#ffffff" font-size="22" font-weight="bold">flywheel</text>
+  <text x="600" y="684" text-anchor="middle" fill="#cdd8ea" font-size="16">ADLC</text>
+
+  <!-- ===== nodes ===== -->
+  <!-- Run (top) -->
+  <rect x="502" y="263" width="196" height="94" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <rect x="502" y="263" width="8" height="94" rx="4" fill="#2f6db3"/>
+  <text x="604" y="304" text-anchor="middle" fill="#1b2a4a" font-size="22" font-weight="bold">Run</text>
+  <text x="604" y="332" text-anchor="middle" fill="#5b6b86" font-size="16">3 golden questions</text>
+
+  <!-- Trace (right-upper) -->
+  <rect x="816" y="491" width="196" height="94" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <rect x="816" y="491" width="8" height="94" rx="4" fill="#2f6db3"/>
+  <text x="918" y="532" text-anchor="middle" fill="#1b2a4a" font-size="22" font-weight="bold">Trace</text>
+  <text x="918" y="560" text-anchor="middle" fill="#5b6b86" font-size="16">OTel &#8594; CloudWatch</text>
+
+  <!-- Evaluate (right-lower) -->
+  <rect x="696" y="860" width="196" height="94" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <rect x="696" y="860" width="8" height="94" rx="4" fill="#2f6db3"/>
+  <text x="798" y="901" text-anchor="middle" fill="#1b2a4a" font-size="22" font-weight="bold">Evaluate</text>
+  <text x="798" y="929" text-anchor="middle" fill="#5b6b86" font-size="15">THELMA + Mind the Goal</text>
+
+  <!-- Diagnose (left-lower) -->
+  <rect x="308" y="860" width="196" height="94" rx="14" fill="#fbecea" stroke="#e3a99f" stroke-width="2"/>
+  <rect x="308" y="860" width="8" height="94" rx="4" fill="#b5402e"/>
+  <text x="410" y="901" text-anchor="middle" fill="#1b2a4a" font-size="22" font-weight="bold">Diagnose</text>
+  <text x="410" y="929" text-anchor="middle" fill="#8a3a2c" font-size="16">prompt or retrieval?</text>
+
+  <!-- Optimize (left-upper) -->
+  <rect x="188" y="491" width="196" height="94" rx="14" fill="#fff4ea" stroke="#eebb88" stroke-width="2"/>
+  <rect x="188" y="491" width="8" height="94" rx="4" fill="#d9722e"/>
+  <text x="290" y="532" text-anchor="middle" fill="#1b2a4a" font-size="22" font-weight="bold">Optimize</text>
+  <text x="290" y="560" text-anchor="middle" fill="#7a5a3a" font-size="15">anti-hallucination prompt</text>
+
+  <!-- ===== Build entry (one-time) ===== -->
+  <rect x="70" y="150" width="330" height="96" rx="12" fill="#eef5ff" stroke="#9bbce0" stroke-width="2"/>
+  <rect x="70" y="150" width="8" height="96" rx="4" fill="#2f6db3"/>
+  <text x="96" y="190" fill="#1b2a4a" font-size="21" font-weight="bold">Build &#183; one-time</text>
+  <text x="96" y="220" fill="#5b6b86" font-size="16">KB &#183; Gateway &#183; Harness &#183; Memory</text>
+  <path d="M360,246 C440,300 470,270 520,300" fill="none" stroke="#2f6db3" stroke-width="3" marker-end="url(#ar)"/>
+
+  <!-- ===== retrieval-failure branch ===== -->
+  <rect x="60" y="1000" width="430" height="120" rx="12" fill="#fbecea" stroke="#e3a99f" stroke-width="2"/>
+  <rect x="60" y="1000" width="8" height="120" rx="4" fill="#b5402e"/>
+  <text x="90" y="1040" fill="#1b2a4a" font-size="21" font-weight="bold">Fix retriever / source docs</text>
+  <text x="90" y="1072" fill="#8a3a2c" font-size="16" font-weight="bold">When SP2 &#8776; 0 (retrieval failed),</text>
+  <text x="90" y="1096" fill="#8a3a2c" font-size="16">a prompt change can't help — fix upstream.</text>
+  <path d="M360,956 C320,985 300,985 280,996" fill="none" stroke="#b5402e" stroke-width="3" marker-end="url(#arR)"/>
+
+  <!-- bottom note -->
+  <rect x="560" y="1010" width="600" height="110" rx="14" fill="#ffffff" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="588" y="1050" fill="#1b2a4a" font-size="20" font-weight="bold">Why a flywheel</text>
+  <text x="588" y="1082" fill="#3a4a66" font-size="17">Diagnose splits the work: tighten the prompt (ring) or fix</text>
+  <text x="588" y="1106" fill="#3a4a66" font-size="17">retrieval (branch). Re-evaluation closes the loop and proves it.</text>
+
+  <text x="1160" y="1158" text-anchor="end" fill="#9aa8bf" font-size="14">Eval-First &#183; ADLC</text>
+</svg>

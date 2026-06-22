@@ -46,12 +46,15 @@ your conversation trace ──→ AgentCore eval service ──→ calls evaluat
 ## THELMA — single-turn RAG quality
 
 THELMA decomposes one Q&A into the triplet `(user question, retrieved source
-documents, agent answer)` and uses an LLM-as-Judge to check it point by point,
-producing **6 scores from 0 to 1**:
+documents, agent answer)` and uses an LLM-as-Judge to check it point by point.
+The THELMA paper defines **6 metrics**; this implementation reports **Source
+Precision as two separate scores** (chunk-level SP1 and fact-level SP2), so you'll
+see **7 scores from 0 to 1** per trace:
 
 | Metric | Full name | Meaning | What a low score means |
 |--------|-----------|---------|------------------------|
-| **SP**  | Source Precision        | Of the retrieved docs, the fraction that is actually relevant | retrieval pulled in irrelevant content |
+| **SP1** | Source Precision (chunk) | Of the retrieved chunks, the fraction relevant as a whole | retrieval pulled in irrelevant chunks |
+| **SP2** | Source Precision (fact)  | Of the facts inside those chunks, the fraction actually relevant | a relevant-looking chunk is mostly noise |
 | **SQC** | Source Query Coverage   | Do the source docs cover all aspects of the question?         | the answer isn't in the knowledge base |
 | **RP**  | Response Precision      | Fraction of the answer that is on-topic                       | answer is verbose / off-topic |
 | **RQC** | Response Query Coverage | Are all aspects of the question answered?                     | answer is incomplete |
@@ -74,10 +77,10 @@ RAG component to fix, not just that the score is low.
 Implemented in `thelma_eval/` (metrics in `evaluators/thelma/metrics.py`, prompts in
 `evaluators/thelma/prompts.py`, the metric-interplay diagnosis in `interplay.py`).
 
-> SP appears in the diagnosis as **SP1** (chunk-level retrieval precision) and **SP2**
-> (fact-level precision). A high SP1 with a low SP2 means the retrieved chunk looks
-> on-topic but most of the *facts* it carries are noise — exactly the symptom of dirty
-> data mixed into the source documents.
+> **Why SP is split into SP1/SP2:** A high SP1 with a low SP2 means the retrieved chunk
+> looks on-topic but most of the *facts* it carries are noise — exactly the symptom of
+> dirty data mixed into the source documents. (In the diagnosis table above, `SP↑`
+> refers to source precision generally.)
 
 ## Mind the Goal — multi-turn goal achievement
 

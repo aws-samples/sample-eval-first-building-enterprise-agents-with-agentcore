@@ -90,7 +90,29 @@ register_evaluator "mtg_goal_success"   "SESSION" "mtg_eval"    "evaluators/mtg_
 echo ""
 echo "🚀 Deploying evaluators (clearing build cache first)..."
 rm -rf agentcore/.cache/thelma_rag_quality agentcore/.cache/mtg_goal_success 2>/dev/null || true
-npx agentcore deploy --yes 2>&1 | tail -3
+
+# 预删可能残留的 evaluator Lambda 日志组（重复运行 / 上次未清干净的账号会有）。
+# CDK 不会 adopt 已存在的 LogGroup，会报 "AWS::Logs::LogGroup ... already exists"
+# 致使整个 deploy 回滚、evaluator 不被创建。删除是幂等的（不存在则忽略）。
+echo "  🧹 清理可能残留的 evaluator 日志组（避免 CDK LogGroup AlreadyExists）..."
+for FN in hrassistant-eval-thelma_rag_quality hrassistant-eval-mtg_goal_success; do
+  aws logs delete-log-group --log-group-name "/aws/lambda/$FN" --region $REGION 2>/dev/null \
+    && echo "    removed stale log group /aws/lambda/$FN" || true
+done
+
+# 部署并检测失败（不能只 `| tail -3` 吞掉错误：CDK 失败时 evaluator 不会创建，
+# 后续 09 评估会因找不到 evaluator 而失败）。保留完整日志、用 PIPESTATUS 判定。
+set +e
+npx agentcore deploy --yes 2>&1 | tee /tmp/eval-deploy.log | tail -5
+DEPLOY_RC=${PIPESTATUS[0]}
+set -e
+if [ "$DEPLOY_RC" -ne 0 ] || grep -qiE '\[ERROR\]|DeploymentError|FAILED' /tmp/eval-deploy.log; then
+  echo ""
+  echo "❌ 评估器部署失败（见上）。常见原因：残留日志组 / 上次部署回滚未清。"
+  echo "   排查：tail -40 \$(ls -t agentcore/.cli/logs/deploy/*.log | head -1)"
+  echo "   多数情况重跑本脚本即可（已自动预删日志组）。"
+  exit 1
+fi
 
 # -----------------------------------------------------------------------------
 # 补 Bedrock 权限到 evaluator 执行角色（LLM-judge 必需）
