@@ -36,15 +36,15 @@
 ## Table of contents
 
 1. [What this builds — and why](#1-what-this-builds--and-why)
-2. [Architecture at a glance](#architecture-at-a-glance)
-3. [The eval-first loop](#the-eval-first-loop-adlc)
-4. [How this maps to the eval-first methodology](#how-this-maps-to-the-eval-first-methodology)
-5. [Prerequisites](#2-prerequisites)
-6. [Execution order at a glance](#3-execution-order-at-a-glance)
-7. [Step-by-step](#4-step-by-step)
-8. [Optional labs](#optional-labs)
-9. [Cleanup](#5-cleanup--99-cleanupsh)
-10. [Data sources & attribution](#6-data-sources--attribution)
+2. [Architecture at a glance](#2-architecture-at-a-glance)
+3. [The eval-first loop](#3-the-eval-first-loop-adlc)
+4. [How this maps to the eval-first methodology](#4-how-this-maps-to-the-eval-first-methodology)
+5. [Prerequisites](#5-prerequisites)
+6. [Execution order at a glance](#6-execution-order-at-a-glance)
+7. [Step-by-step](#7-step-by-step)
+8. [Optional labs](#8-optional-labs)
+9. [Cleanup](#9-cleanup--99-cleanupsh)
+10. [Data sources & attribution](#10-data-sources--attribution)
 
 ---
 
@@ -95,7 +95,7 @@ attribute each failure via **RCOF** = *Root Cause of Failure* (7-category defect
 > The **TRACE → glass-box** and **SESSION → black-box** mapping is deliberate: AgentCore's
 > session / trace / span levels line up with the three evaluation granularities (black-box / glass-box
 > / white-box) from the companion white paper. These two evaluators are **custom L2 evaluators**
-> (calibrated LLM-as-a-judge) in that framework — see [below](#how-this-maps-to-the-eval-first-methodology).
+> (calibrated LLM-as-a-judge) in that framework — see [below](#4-how-this-maps-to-the-eval-first-methodology).
 
 Both use judge model `us.amazon.nova-2-lite-v1:0`. Each evaluator bundles its algorithm, an **adapter
 layer** (ADOT span → evaluator input), and a Lambda handler.
@@ -105,12 +105,12 @@ layer** (ADOT span → evaluator input), and a Lambda handler.
 > diagnosis table, paper citations, and licensing.
 
 To make the evaluation meaningful, the Knowledge Base is seeded with **intentionally noisy,
-cross-domain data** (see [§6](#6-data-sources--attribution)) — so the THELMA scores surface real
+cross-domain data** (see [§10](#10-data-sources--attribution)) — so the THELMA scores surface real
 retrieval-quality problems instead of a clean toy result.
 
 ---
 
-## Architecture at a glance
+## 2. Architecture at a glance
 
 The agent runs as an AgentCore **Harness** in VPC mode. Every invoke pulls Memory + Skills into
 context, calls HR tools through the **Gateway** (MCP), and emits OTel trace spans that flow to
@@ -122,7 +122,7 @@ CloudWatch — where the two evaluators read them.
 
 ---
 
-## The eval-first loop (ADLC)
+## 3. The eval-first loop (ADLC)
 
 The workshop closes the **Agent Development Life Cycle**: build, run, trace, evaluate, _diagnose_, then
 optimize — and prove the fix with a re-evaluation.
@@ -136,7 +136,7 @@ optimize — and prove the fix with a re-evaluation.
 
 ---
 
-## How this maps to the eval-first methodology
+## 4. How this maps to the eval-first methodology
 
 This sample is the **hands-on companion** to a four-part white paper on production-grade enterprise
 agents. Where the white paper gives the *why* and the framework, this repo lets you run it end to end.
@@ -157,7 +157,7 @@ The mapping:
 
 ---
 
-## 2. Prerequisites
+## 5. Prerequisites
 
 These scripts build the **entire system from scratch in your own AWS account**. Run them from an **EC2
 instance in `us-west-2`**. You must run **every** step in order, starting with the infrastructure stack
@@ -201,7 +201,7 @@ chmod +x *.sh
 
 ---
 
-## 3. Execution order at a glance
+## 6. Execution order at a glance
 
 Approximate timings are from an end-to-end run on a blank account (us-west-2).
 Total ≈ **25–30 minutes** of mostly-unattended waiting.
@@ -228,7 +228,7 @@ Total ≈ **25–30 minutes** of mostly-unattended waiting.
 
 ---
 
-## 4. Step-by-step
+## 7. Step-by-step
 
 ### Step 1 — `00-setup.sh`  ·  _Phase 0_
 Verifies `agentcore`, `node`, and `aws` are installed, prints your account/region, and creates the
@@ -268,7 +268,7 @@ there — **no manual environment variables needed.**
 > HR-MultiWOZ dataset** (arXiv:2402.01018, **Apache-2.0**; bundled in `knowledge-base/domain_faqs.py`).
 > These FAQs are intentionally noisy and cross-domain — they simulate the "dirty" data found in real
 > enterprise knowledge bases, so the evaluation can surface retrieval-quality problems. See
-> [§6 Data sources & attribution](#6-data-sources--attribution). The models referenced
+> [§10 Data sources & attribution](#10-data-sources--attribution). The models referenced
 > (`amazon.titan-embed-text-v2:0`, `us.amazon.nova-2-lite-v1:0`) are invoked as managed Amazon Bedrock
 > models — no model weights are included or distributed.
 
@@ -416,7 +416,7 @@ Prompt" from "fix retrieval."
 
 ---
 
-## Optional labs
+## 8. Optional labs
 
 These three are **optional extensions** beyond the ~2-hour core path. They reuse the Agent and
 evaluators you already deployed, so **run them before `99-cleanup.sh`** — once cleanup runs, those
@@ -481,7 +481,7 @@ with caution (small models are especially prone to this).
 
 ---
 
-## 5. Cleanup — `99-cleanup.sh`
+## 9. Cleanup — `99-cleanup.sh`
 
 > [!CAUTION]
 > **Always run this after the workshop** to avoid ongoing charges (Knowledge Base, Lambdas, NAT
@@ -497,7 +497,7 @@ own (no charge, no action needed). The script is idempotent — re-running is sa
 
 ---
 
-## 6. Data sources & attribution
+## 10. Data sources & attribution
 
 The Knowledge Base documents combine two sources:
 
