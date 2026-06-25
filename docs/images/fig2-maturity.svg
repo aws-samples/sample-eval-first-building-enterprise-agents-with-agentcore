@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" font-family="Noto Sans CJK SC, Noto Sans, sans-serif">
+  <!-- explicit white background -->
+  <rect x="0" y="0" width="900" height="520" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="450" y="42" font-size="25" font-weight="bold" fill="#1f3a5f" text-anchor="middle">Embedding Evaluation into Development: Three-Stage Maturity</text>
+
+  <!-- arrow marker -->
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3f648f"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Stage 1: Manual tracing ===== -->
+  <rect x="40" y="92" width="230" height="120" rx="12" fill="#eef3f9" stroke="#7da4c9" stroke-width="2"/>
+  <circle cx="72" cy="124" r="15" fill="#7da4c9"/>
+  <text x="72" y="130" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="100" y="130" font-size="18" font-weight="bold" fill="#1f3a5f">Manual Tracing</text>
+  <text x="60" y="162" font-size="12" fill="#3a4a5e">read production traces one by one</text>
+  <text x="60" y="186" font-size="12" fill="#3a4a5e">look at data first, score later</text>
+
+  <!-- ===== Stage 2: Online feedback ===== -->
+  <rect x="335" y="92" width="230" height="120" rx="12" fill="#dfe9f4" stroke="#4a7bb0" stroke-width="2"/>
+  <circle cx="367" cy="124" r="15" fill="#4a7bb0"/>
+  <text x="367" y="130" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="395" y="130" font-size="18" font-weight="bold" fill="#1f3a5f">Online Feedback</text>
+  <text x="355" y="162" font-size="12" fill="#3a4a5e">live signals / user feedback</text>
+  <text x="355" y="186" font-size="12" fill="#3a4a5e">real-time guardrails &amp; alerts</text>
+
+  <!-- ===== Stage 3: Offline regression set ===== -->
+  <rect x="630" y="92" width="230" height="120" rx="12" fill="#cdddee" stroke="#2c5282" stroke-width="2"/>
+  <circle cx="662" cy="124" r="15" fill="#2c5282"/>
+  <text x="662" y="130" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="690" y="130" font-size="18" font-weight="bold" fill="#1f3a5f">Offline Regression</text>
+  <text x="650" y="162" font-size="12" fill="#3a4a5e">build golden set / case library</text>
+  <text x="650" y="186" font-size="12" fill="#3a4a5e">regress before every change</text>
+
+  <!-- stage arrows -->
+  <line x1="270" y1="152" x2="333" y2="152" stroke="#3f648f" stroke-width="3" marker-end="url(#arrow2)"/>
+  <line x1="565" y1="152" x2="628" y2="152" stroke="#3f648f" stroke-width="3" marker-end="url(#arrow2)"/>
+
+  <!-- AgentOps attached (spans the maturity progression) -->
+  <rect x="40" y="232" width="820" height="58" rx="12" fill="#f4f1fb" stroke="#8a73c2" stroke-width="2"/>
+  <text x="70" y="258" font-size="18" font-weight="bold" fill="#5b4a93">AgentOps</text>
+  <text x="70" y="280" font-size="13" fill="#5b5470">spans the whole journey: observability · trace collection · version &amp; baseline management · continuous-eval loop</text>
+  <!-- connector ticks from each stage down to AgentOps -->
+  <line x1="155" y1="212" x2="155" y2="232" stroke="#8a73c2" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="450" y1="212" x2="450" y2="232" stroke="#8a73c2" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="745" y1="212" x2="745" y2="232" stroke="#8a73c2" stroke-width="2" stroke-dasharray="4 3"/>
+
+  <!-- ===== Below: offline / online dual-track ===== -->
+  <text x="450" y="338" font-size="20" font-weight="bold" fill="#2c5282" text-anchor="middle">Offline / Online Dual-Track</text>
+
+  <!-- offline track -->
+  <rect x="60" y="356" width="370" height="118" rx="12" fill="#eef3f9" stroke="#2c5282" stroke-width="2"/>
+  <text x="245" y="384" font-size="17" font-weight="bold" fill="#1f3a5f" text-anchor="middle">Offline · Capability / Regression</text>
+  <text x="245" y="412" font-size="13.5" fill="#3a4a5e" text-anchor="middle">fixed dataset · reproducible · CI gate</text>
+  <text x="245" y="436" font-size="13.5" fill="#3a4a5e" text-anchor="middle">registered baseline accuracy</text>
+  <text x="245" y="460" font-size="12.5" fill="#8190a3" text-anchor="middle">answers: did this change regress?</text>
+
+  <!-- online track -->
+  <rect x="470" y="356" width="370" height="118" rx="12" fill="#fdf3ec" stroke="#c2723f" stroke-width="2"/>
+  <text x="655" y="384" font-size="17" font-weight="bold" fill="#7a4517" text-anchor="middle">Online · Consistency / Reliability</text>
+  <text x="655" y="412" font-size="13.5" fill="#5a4636" text-anchor="middle">real traffic · monitoring · drift detection</text>
+  <text x="655" y="436" font-size="13.5" fill="#5a4636" text-anchor="middle">production reliability</text>
+  <text x="655" y="460" font-size="12.5" fill="#a07a5e" text-anchor="middle">answers: is it stable in prod?</text>
+
+  <!-- drift link between the two tracks -->
+  <line x1="430" y1="415" x2="470" y2="415" stroke="#9aa6b6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow2)" marker-start="url(#arrow2)"/>
+  <text x="450" y="498" font-size="13" fill="#8190a3" text-anchor="middle">watch the drift between baseline accuracy and production reliability</text>
+</svg>

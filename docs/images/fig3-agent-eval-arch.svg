@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Noto Sans CJK SC, Noto Sans, sans-serif">
+  <!-- explicit white background -->
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2c5282"/>
+    </marker>
+    <marker id="arrFb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2723f"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-size="26" font-weight="bold" fill="#1f3a5f" text-anchor="middle">Agent-based Evaluation Architecture</text>
+  <text x="500" y="66" font-size="14" fill="#8190a3" text-anchor="middle">agents evaluating agents: process-level judgment + root-cause analysis, not just the final answer</text>
+
+  <!-- ===== 1. Evaluated agent trajectory (input) ===== -->
+  <rect x="40" y="120" width="200" height="150" rx="12" fill="#eef3f9" stroke="#7da4c9" stroke-width="2"/>
+  <text x="140" y="150" font-size="18" font-weight="bold" fill="#1f3a5f" text-anchor="middle">Evaluated Agent</text>
+  <text x="140" y="176" font-size="15" fill="#2c5282" text-anchor="middle">execution trace</text>
+  <line x1="64" y1="190" x2="216" y2="190" stroke="#cbd6e4" stroke-width="1.5"/>
+  <text x="140" y="212" font-size="12.5" fill="#3a4a5e" text-anchor="middle">multi-step reasoning · tool calls</text>
+  <text x="140" y="234" font-size="12.5" fill="#3a4a5e" text-anchor="middle">intermediate state · final output</text>
+  <text x="140" y="256" font-size="13" fill="#8190a3" text-anchor="middle">(subject under evaluation)</text>
+
+  <!-- arrow 1 -> 2 -->
+  <line x1="240" y1="200" x2="338" y2="200" stroke="#2c5282" stroke-width="3" marker-end="url(#arr3)"/>
+  <text x="289" y="180" font-size="11.5" fill="#5a6b80" text-anchor="middle">trace input</text>
+
+  <!-- ===== 2. Evaluator Agent (with tools) ===== -->
+  <rect x="340" y="104" width="300" height="290" rx="14" fill="#dfe9f4" stroke="#2c5282" stroke-width="2.5"/>
+  <text x="490" y="134" font-size="19" font-weight="bold" fill="#13314f" text-anchor="middle">Evaluator Agent</text>
+  <text x="490" y="156" font-size="12.5" fill="#3f648f" text-anchor="middle">plans its own eval steps, calls tools on demand</text>
+
+  <!-- tool: code execution -->
+  <rect x="362" y="176" width="256" height="56" rx="9" fill="#ffffff" stroke="#4a7bb0" stroke-width="1.8"/>
+  <text x="490" y="200" font-size="15" font-weight="bold" fill="#2c5282" text-anchor="middle">Tool · Code Execution</text>
+  <text x="490" y="221" font-size="12" fill="#5a6b80" text-anchor="middle">run asserts / recompute / verify results</text>
+
+  <!-- tool: retrieval -->
+  <rect x="362" y="240" width="256" height="56" rx="9" fill="#ffffff" stroke="#4a7bb0" stroke-width="1.8"/>
+  <text x="490" y="264" font-size="15" font-weight="bold" fill="#2c5282" text-anchor="middle">Tool · Retrieval</text>
+  <text x="490" y="285" font-size="12" fill="#5a6b80" text-anchor="middle">fetch references / fact-check evidence</text>
+
+  <!-- tool: rubric decomposition -->
+  <rect x="362" y="304" width="256" height="56" rx="9" fill="#ffffff" stroke="#4a7bb0" stroke-width="1.8"/>
+  <text x="490" y="328" font-size="15" font-weight="bold" fill="#2c5282" text-anchor="middle">Tool · Rubric Decomposition</text>
+  <text x="490" y="349" font-size="12" fill="#5a6b80" text-anchor="middle">split into sub-criteria, judge each</text>
+
+  <!-- arrow 2 -> 3 -->
+  <line x1="640" y1="200" x2="738" y2="200" stroke="#2c5282" stroke-width="3" marker-end="url(#arr3)"/>
+  <text x="689" y="180" font-size="11.5" fill="#5a6b80" text-anchor="middle">step-by-step</text>
+
+  <!-- ===== 3. Process-level judgment + RCA / intermediate feedback ===== -->
+  <rect x="740" y="120" width="220" height="160" rx="12" fill="#cdddee" stroke="#2c5282" stroke-width="2"/>
+  <text x="850" y="150" font-size="16" font-weight="bold" fill="#13314f" text-anchor="middle">Process-level Judgment</text>
+  <line x1="764" y1="164" x2="936" y2="164" stroke="#a9c0d8" stroke-width="1.5"/>
+  <text x="850" y="188" font-size="13" fill="#2c5282" text-anchor="middle">per-step verdict &amp; attribution</text>
+  <text x="850" y="212" font-size="13" fill="#2c5282" text-anchor="middle">RCA (root-cause analysis)</text>
+  <text x="850" y="236" font-size="12" fill="#2c5282" text-anchor="middle">intermediate feedback / correctable</text>
+  <text x="850" y="262" font-size="12" fill="#8190a3" text-anchor="middle">pinpoints which step failed</text>
+
+  <!-- arrow 3 -> 4 (down to report) -->
+  <line x1="850" y1="280" x2="850" y2="360" stroke="#2c5282" stroke-width="3" marker-end="url(#arr3)"/>
+
+  <!-- ===== 4. Report ===== -->
+  <rect x="740" y="362" width="220" height="92" rx="12" fill="#2c5282" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="850" y="396" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Evaluation Report</text>
+  <text x="850" y="422" font-size="12" fill="#dbe6f3" text-anchor="middle">score + evidence + action items</text>
+  <text x="850" y="442" font-size="12" fill="#aec6e0" text-anchor="middle">traceable, actionable</text>
+
+  <!-- intermediate feedback loop: report/judgment back to evaluated agent -->
+  <path d="M 740 410 C 470 470, 360 470, 140 320 L 140 274" fill="none" stroke="#c2723f" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arrFb)"/>
+  <text x="430" y="486" font-size="13" fill="#c2723f" text-anchor="middle">feedback loop: guide the evaluated agent to improve / retry</text>
+
+  <!-- ===== Side annotation: complementarity ===== -->
+  <rect x="40" y="514" width="920" height="106" rx="12" fill="#f6f8fb" stroke="#c3cedd" stroke-width="1.8"/>
+  <text x="60" y="540" font-size="15" font-weight="bold" fill="#1f3a5f">Three complementary roles (don't overstate it: agent-eval is slower, costlier, and itself needs verification)</text>
+
+  <!-- card A: single-round LLM-judge -->
+  <rect x="60" y="552" width="285" height="54" rx="9" fill="#ffffff" stroke="#7089a5" stroke-width="1.6"/>
+  <text x="76" y="574" font-size="14" font-weight="bold" fill="#3f648f">Single-round LLM-judge</text>
+  <text x="76" y="595" font-size="12" fill="#5a6b80">fast &amp; cheap · large-batch first pass</text>
+
+  <!-- card B: Agent-based eval (this) -->
+  <rect x="357" y="552" width="285" height="54" rx="9" fill="#eef3f9" stroke="#2c5282" stroke-width="2"/>
+  <text x="373" y="574" font-size="14" font-weight="bold" fill="#13314f">Agent-based eval (this diagram)</text>
+  <text x="373" y="595" font-size="12" fill="#2c5282">multi-step · tool-verified · process attribution</text>
+
+  <!-- card C: human -->
+  <rect x="654" y="552" width="286" height="54" rx="9" fill="#ffffff" stroke="#7089a5" stroke-width="1.6"/>
+  <text x="670" y="574" font-size="14" font-weight="bold" fill="#3f648f">Human evaluation</text>
+  <text x="670" y="595" font-size="12" fill="#5a6b80">calibration · subjective &amp; high-risk final call</text>
+</svg>
