@@ -109,7 +109,7 @@ Below are the four deliverables for three typical agent types for reference:
 Build a PoC with this limited scope, then test with real users. They'll immediately discover unanticipated issues—the agent might err on date parsing, might not handle abbreviations well, or might call the wrong tool when questions are rephrased. Learning these during PoC costs weeks; learning them in production costs reputation and user trust.
 ### Automate Evaluation from Day One
 With a baseline dataset, the next step is establishing **automated evaluation mechanisms**—making it part of the development process, not a checklist run once before launch.
-First, define measurement metrics. Different agent types have different focuses: customer service agents track resolution rate and user satisfaction; financial agents track calculation accuracy and citation quality; HR assistants track policy accuracy and response completeness. But regardless of agent type, always track two types of metrics: **technical metrics** (latency, token usage, tool invocation accuracy) and **business metrics** (whether answers are actually useful). Both must be viewed together—low latency with wrong answers is meaningless; good answers with prohibitively high costs is equally problematic.
+First, define measurement metrics. Different agent types have different focuses: customer service agents track resolution rate and user satisfaction; financial agents track calculation accuracy and citation quality; HR assistants track policy accuracy and response completeness. But regardless of agent type, always track two types of metrics: **technical metrics** (latency, token usage, tool invocation accuracy) and **business metrics** (whether answers are actually useful). Both must be viewed together—low latency with wrong answers is meaningless; good answers with prohibitively high costs are equally problematic.
 Evaluation datasets should cover three types of scenarios:
 - **Multiple phrasings of the same question**: Users don't speak like API documentation; "last quarter Europe revenue" and "EMEA Q3 numbers" should trigger identical tool invocations
 - **Queries that should be refused or escalated to humans**: Boundary cases need evaluation too
@@ -490,7 +490,7 @@ Thus, metrics system needs a set of Decision-First KPIs on top:
 Technical metrics answer "did agent do it right," Decision-First KPIs answer "was agent doing it worthwhile." Both must appear simultaneously on evaluation panels.
 AgentCore Evaluations includes a set of built-in evaluators, tiered by granularity with two scoring methods (LLM-as-a-Judge + programmatic):
 - **Session-level · LLM (1):** Goal success rate
-- **Session-level · Programmatic/no-LLM (3, ground truth trajectory matching):** TrajectoryExactOrderMatch, TrajectoryInOrderMatch, TrajectoryAnyOrderMatch  
+- **Session-level · Programmatic/no-LLM (3, ground truth trajectory matching):** TrajectoryExactOrderMatch, TrajectoryInOrderMatch, TrajectoryAnyOrderMatch
 - **Trace-level · LLM (11):** Coherence, Conciseness, Context relevance, Correctness, Faithfulness, Harmfulness, Helpfulness, Instruction following, Refusal, Response relevance, Stereotyping
 - **Tool-level · LLM (2):** Tool selection accuracy, Tool parameter accuracy
 Other metrics (Topic Adherence, Context Retrieval, Multi-turn Function Calling Accuracy, Planning/Communication/Collaboration Score etc.) are Amazon internal framework extensions requiring custom evaluators.
@@ -509,7 +509,7 @@ Behind this pipeline is a three-layer Observability strategy (consistent with Ag
 - **Core signals tracked:** token usage, latency percentiles (P50/P95), error rates, tool invocation patterns.
 Worth emphasizing this system is open: AgentCore emits telemetry in standard OpenTelemetry (OTEL) format, can integrate with any OTEL-compatible observability platform; officially supports OpenInference, OpenLLMetry, OpenLit, Traceloop and other instrumentation libraries.
 "You can't improve what you can't measure. Set up your measurement infrastructure before you need it."
-## 3.4 Evaluation Datasets and HITL: They Determine Evaluation Quality's Upper Limit
+## 3.4 Evaluation Datasets and HITL: They Determine the Upper Limit of Evaluation Quality
 However good workflows are, feeding in bad datasets makes conclusions unreliable. In AWS's experience, building evaluation datasets has three repeatedly emphasized points:
 - **Multiple phrasings of same query**—real users don't ask as standardly as API docs; "how many vacation days left" and "annual leave balance" ask the same thing
 - **Edge cases that should refuse/escalate**—e.g., HR agent encountering "why is my bonus less than colleague's" should escalate to human, not answer directly
@@ -526,7 +526,7 @@ In other words, **HITL is the ruler making automated evaluation "trustable."**
 With methods and tools in place, final hurdle is discipline. AWS repeatedly emphasizes **evaluation isn't a one-time pre-launch activity, but feedback loop throughout development**. In practice, four core practices:
 **1. Holistic multi-dimensional evaluation:** Must transcend traditional accuracy metrics, covering quality, performance, responsibility, cost four dimensions.
 **2. Use case-specific metrics:** Beyond standard metrics, must collaborate with domain experts defining business metrics. E.g., customer service apps additionally track customer satisfaction, first-contact resolution, sentiment analysis scores.
-**3. Balance technical and business metrics:** Latency and cost only meaningful when answers are correct. An agent that's fast and cheap but wrong—however beautiful technical metrics, is negative value.
+**3. Balance technical and business metrics:** Latency and cost are only meaningful when answers are correct. An agent that's fast and cheap but wrong—however beautiful its technical metrics—is of negative value.
 **4. Production continuous evaluation:** Pre-launch evaluation never covers all real scenarios. In production must continuously monitor diverse user behaviors, usage patterns, edge cases unseen pre-launch, to discover capability decay appearing over time.
 This discipline's most concrete manifestation is that real tradeoff case repeatedly cited in AgentCore Best Practices: Financial analysis agent baseline is 92% tool selection accuracy, 3.2s P50 latency; after switching model from Claude Sonnet 4.5 to Claude Haiku 4.5 and rerunning evaluation, tool selection accuracy dropped to 87% (~5 percentage points down), but P50 latency improved to 1.8s (~44% improvement). Whether this trade-off is worth it must be decided by quantified evaluation, not gut feel.
 ## 3.6 Tool Support: AgentCore Evaluations
