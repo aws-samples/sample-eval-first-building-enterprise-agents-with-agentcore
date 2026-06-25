@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 518" width="960" height="518" font-family="Noto Sans CJK SC, Noto Sans, sans-serif">
+  <rect x="0" y="0" width="960" height="518" fill="#ffffff"/>
+
+  <g transform="translate(0,-72)">
+  <!-- top axis label (Pillar 2), centered over the 3 data columns -->
+  <text x="573" y="98" font-size="14.5" font-weight="bold" fill="#2c5282" text-anchor="middle">Pillar 2 · Three Evidence-Weight Layers  →</text>
+  <!-- left axis label (Pillar 1), in the dedicated left gutter, drawn over white margin -->
+  <text x="34" y="352" font-size="14" font-weight="bold" fill="#2c5282" text-anchor="middle" transform="rotate(-90 34 352)">Pillar 1 · Three Granularities  ↓</text>
+
+  <!-- ===== column headers (y=112 h=56) ===== -->
+  <rect x="204" y="112" width="242" height="56" rx="8" fill="#2c5282"/>
+  <text x="325" y="135" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">Layer 1 · Mechanical</text>
+  <text x="325" y="156" font-size="12" fill="#cfe0f0" text-anchor="middle">grader: code rules</text>
+
+  <rect x="452" y="112" width="242" height="56" rx="8" fill="#3f7d7b"/>
+  <text x="573" y="135" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">Layer 2 · Semi-objective</text>
+  <text x="573" y="156" font-size="12" fill="#d6ecea" text-anchor="middle">grader: LLM-as-a-Judge</text>
+
+  <rect x="700" y="112" width="242" height="56" rx="8" fill="#8a7fa0"/>
+  <text x="821" y="135" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">Layer 3 · Subjective</text>
+  <text x="821" y="156" font-size="12" fill="#ece8f2" text-anchor="middle">refuse by default</text>
+
+  <!-- ===== row headers (x=64 w=130) ===== -->
+  <rect x="64" y="178" width="130" height="112" rx="8" fill="#7da4c9"/>
+  <text x="129" y="226" font-size="16" font-weight="bold" fill="#13314f" text-anchor="middle">Black-Box</text>
+  <text x="129" y="250" font-size="11.5" fill="#13314f" text-anchor="middle">final response</text>
+
+  <rect x="64" y="296" width="130" height="112" rx="8" fill="#4a7bb0"/>
+  <text x="129" y="344" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">Glass-Box</text>
+  <text x="129" y="368" font-size="11.5" fill="#eaf1f9" text-anchor="middle">full trajectory</text>
+
+  <rect x="64" y="414" width="130" height="112" rx="8" fill="#2c5282"/>
+  <text x="129" y="462" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">White-Box</text>
+  <text x="129" y="486" font-size="11.5" fill="#dbe6f3" text-anchor="middle">single step</text>
+
+  <!-- ===== cells: row1 black-box (y=178) ===== -->
+  <rect x="204" y="178" width="242" height="112" rx="8" fill="#eef4fb" stroke="#cdd9e8"/>
+  <text x="325" y="226" font-size="13.5" fill="#1f3a5f" text-anchor="middle">output schema / format</text>
+  <text x="325" y="250" font-size="11.5" fill="#6f8197" text-anchor="middle">fields complete &amp; parseable?</text>
+
+  <rect x="452" y="178" width="242" height="112" rx="8" fill="#ecf5f4" stroke="#c9e0dd"/>
+  <text x="573" y="226" font-size="13.5" fill="#234b49" text-anchor="middle">relevance · tone · faithfulness</text>
+  <text x="573" y="250" font-size="11.5" fill="#5f807d" text-anchor="middle">correct &amp; on-topic?</text>
+
+  <rect x="700" y="178" width="242" height="112" rx="8" fill="#f3f1f7" stroke="#dcd6e6"/>
+  <text x="821" y="226" font-size="13.5" fill="#463a5c" text-anchor="middle">creativity · preference</text>
+  <text x="821" y="250" font-size="11.5" fill="#7d7392" text-anchor="middle">→ refuse, leave to humans</text>
+
+  <!-- ===== cells: row2 glass-box (y=296) ===== -->
+  <rect x="204" y="296" width="242" height="112" rx="8" fill="#eef4fb" stroke="#cdd9e8"/>
+  <text x="325" y="344" font-size="13.5" fill="#1f3a5f" text-anchor="middle">tool-call format · latency</text>
+  <text x="325" y="368" font-size="11.5" fill="#6f8197" text-anchor="middle">call valid? how slow?</text>
+
+  <rect x="452" y="296" width="242" height="112" rx="8" fill="#ecf5f4" stroke="#c9e0dd"/>
+  <text x="573" y="344" font-size="13.5" fill="#234b49" text-anchor="middle">trajectory sound / efficient?</text>
+  <text x="573" y="368" font-size="11.5" fill="#5f807d" text-anchor="middle">right steps, no detours?</text>
+
+  <rect x="700" y="296" width="242" height="112" rx="8" fill="#f3f1f7" stroke="#dcd6e6"/>
+  <text x="821" y="344" font-size="13.5" fill="#463a5c" text-anchor="middle">problem-solving style</text>
+  <text x="821" y="368" font-size="11.5" fill="#7d7392" text-anchor="middle">→ refuse</text>
+
+  <!-- ===== cells: row3 white-box (y=414) ===== -->
+  <rect x="204" y="414" width="242" height="112" rx="8" fill="#eef4fb" stroke="#cdd9e8"/>
+  <text x="325" y="462" font-size="13.5" fill="#1f3a5f" text-anchor="middle">single-step param typing</text>
+  <text x="325" y="486" font-size="11.5" fill="#6f8197" text-anchor="middle">args of this step correct?</text>
+
+  <rect x="452" y="414" width="242" height="112" rx="8" fill="#ecf5f4" stroke="#c9e0dd"/>
+  <text x="573" y="462" font-size="13.5" fill="#234b49" text-anchor="middle">single-step reasoning</text>
+  <text x="573" y="486" font-size="11.5" fill="#5f807d" text-anchor="middle">does this step hold up?</text>
+
+  <rect x="700" y="414" width="242" height="112" rx="8" fill="#f6f6f7" stroke="#e2e2e6"/>
+  <text x="821" y="462" font-size="14.5" fill="#9aa0ab" text-anchor="middle">—</text>
+  <text x="821" y="486" font-size="11.5" fill="#9aa0ab" text-anchor="middle">no subjective dim at step level</text>
+
+  <!-- footer (two lines to avoid clipping in English) -->
+  <text x="480" y="556" font-size="12.5" fill="#8190a3" text-anchor="middle">The two pillars are orthogonal: pick granularity first, then evidence layer; empty cells are rarely-evaluated combinations.</text>
+  <text x="480" y="576" font-size="12.5" fill="#8190a3" text-anchor="middle">Humans span all layers — calibration and final arbitration.</text>
+  </g>
+</svg>

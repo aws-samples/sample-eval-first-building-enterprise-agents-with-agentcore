@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 472" width="800" height="472" font-family="Noto Sans CJK SC, Noto Sans, sans-serif">
+  <!-- explicit white background (avoids transparent PNG turning gray in PDF) -->
+  <rect x="0" y="0" width="800" height="472" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="400" y="42" font-size="26" font-weight="bold" fill="#1f3a5f" text-anchor="middle">Evaluation Methodology: Two Pillars</text>
+
+  <!-- two pillars are intentionally rendered with different shapes
+       (rectangles stack vs. pyramid) to convey "not aligned 1:1";
+       no center divider, no explicit callout. -->
+
+
+  <!-- ============ LEFT PILLAR: granularity (stacked bottom-up) ============ -->
+  <text x="200" y="92" font-size="20" font-weight="bold" fill="#2c5282" text-anchor="middle">Pillar 1 · Three Granularities</text>
+
+  <!-- top: white-box -->
+  <rect x="68" y="120" width="264" height="78" rx="10" fill="#2c5282" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="200" y="152" font-size="20" font-weight="bold" fill="#ffffff" text-anchor="middle">White-Box</text>
+  <text x="200" y="180" font-size="13" fill="#dbe6f3" text-anchor="middle">inspect internal state / reasoning</text>
+
+  <!-- middle: glass-box -->
+  <rect x="68" y="210" width="264" height="78" rx="10" fill="#4a7bb0" stroke="#2c5282" stroke-width="2"/>
+  <text x="200" y="242" font-size="20" font-weight="bold" fill="#ffffff" text-anchor="middle">Glass-Box</text>
+  <text x="200" y="270" font-size="13" fill="#eaf1f9" text-anchor="middle">inspect trajectory / intermediate steps</text>
+
+  <!-- bottom: black-box -->
+  <rect x="68" y="300" width="264" height="78" rx="10" fill="#7da4c9" stroke="#4a7bb0" stroke-width="2"/>
+  <text x="200" y="332" font-size="20" font-weight="bold" fill="#13314f" text-anchor="middle">Black-Box</text>
+  <text x="200" y="360" font-size="13" fill="#13314f" text-anchor="middle">inputs / outputs only</text>
+
+  <!-- upward arrow indicating increasing visibility bottom-up -->
+  <line x1="48" y1="378" x2="48" y2="124" stroke="#5a6b80" stroke-width="2.5"/>
+  <polygon points="48,116 42,132 54,132" fill="#5a6b80"/>
+  <text x="34" y="252" font-size="13" fill="#5a6b80" text-anchor="middle" transform="rotate(-90 34 252)">more visibility</text>
+
+  <text x="200" y="420" font-size="14" fill="#5a6b80" text-anchor="middle">what to evaluate × how to evaluate</text>
+  <text x="200" y="444" font-size="13" fill="#8190a3" text-anchor="middle">deeper granularity localizes failures more finely</text>
+
+  <!-- ============ RIGHT PILLAR: three evidence-weight layers (pyramid) ============ -->
+  <text x="600" y="92" font-size="20" font-weight="bold" fill="#c05621" text-anchor="middle">Pillar 2 · Evidence Weight</text>
+
+  <!-- Layer 3 (top, smallest) -->
+  <polygon points="600,118 668,200 532,200" fill="#fbd38d" stroke="#ed8936" stroke-width="2"/>
+  <text x="600" y="158" font-size="15" font-weight="bold" fill="#7b341e" text-anchor="middle">Layer 3</text>
+  <text x="600" y="178" font-size="11" fill="#7b341e" text-anchor="middle">Subjective</text>
+  <text x="600" y="194" font-size="11" fill="#7b341e" text-anchor="middle">refuse by default</text>
+
+  <!-- Layer 2 (middle trapezoid) -->
+  <polygon points="532,204 668,204 712,288 488,288" fill="#ed8936" stroke="#c05621" stroke-width="2"/>
+  <text x="600" y="240" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">Layer 2</text>
+  <text x="600" y="262" font-size="11" fill="#fff5eb" text-anchor="middle">Semi-objective · pinned judge</text>
+
+  <!-- Layer 1 (bottom trapezoid, widest) -->
+  <polygon points="488,292 712,292 760,378 440,378" fill="#c05621" stroke="#9c4221" stroke-width="2"/>
+  <text x="600" y="328" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">Layer 1</text>
+  <text x="600" y="350" font-size="11.5" fill="#fde4cf" text-anchor="middle">Mechanically verifiable</text>
+
+  <!-- weight arrow: trust/weight increases downward (toward Layer 1) -->
+  <line x1="408" y1="124" x2="408" y2="378" stroke="#5a6b80" stroke-width="2.5"/>
+  <polygon points="408,386 402,370 414,370" fill="#5a6b80"/>
+  <text x="394" y="252" font-size="13" fill="#5a6b80" text-anchor="middle" transform="rotate(-90 394 252)">more evidence weight</text>
+
+  <text x="600" y="420" font-size="14" fill="#5a6b80" text-anchor="middle">lower = more trustworthy, more reusable</text>
+  <text x="600" y="444" font-size="13" fill="#8190a3" text-anchor="middle">subjective dims with no reliable signal → refuse</text>
+
+</svg>
